@@ -29,7 +29,34 @@ The R Markdown file should include a section in which you read in the raw data f
 
 Your data analysis should include substantial data exploration including graphical and numerical summaries which do not appear in the final report. You may exclude such analysis by using include=FALSE in the corresponding R chunks.The methods of analysis should primarily be using methods discussed from the course.
 ```{r, include = FALSE}
+E2020 = read_csv("emissions2020.csv")
+C2020 = read_csv("consumption2020.csv")
 
+E2020 = E2020 %>% 
+    pivot_longer(
+   cols = c(3:34),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "MmtCO2e",
+   values_drop_na = TRUE) 
+    
+E2020A = E2020 %>%    
+select(Year, Sector, Source, MmtCO2e,`Growth (2019-2050)`) %>% 
+    filter(Sector != "NA")
+
+
+C2020A = C2020 %>%
+    pivot_longer(
+   cols = c(3:34),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "quads",
+   values_drop_na = TRUE)
+
+C2020A = C2020 %>% 
+select(Year, Sector, Source, quads,`Growth (2019-2050)`) %>% 
+ filter(Source != "Total") %>% 
+    arrange(Year)
 ```
 ### Introduction
 ####Describe the question or questions of interest and the motivation for the analysis.
