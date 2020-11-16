@@ -1,0 +1,63 @@
+---
+title: "Final Project Draft"
+author: "Lindsey Fisher"
+date: "11/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## An Analysis of US Enenrgy Related Consumption and Emmisions Data
+### Group Members: Lindsey Fisher, Param Bhandare, Yunqing Xiao
+
+You should turn in three (or more) documents:
+One (or more) files with your data.
+An R Markdown file with your analysis.
+A knitted HTML file which contains your full report.
+The format of the report is described in detail below.
+Data
+Upload one or more data files that can be read in with code in the R Markdown file to replicate your analysis.
+
+
+
+The R Markdown file should include a section in which you read in the raw data files and transform the data for analysis. Exclude this R code from the knitted HTML report by using include=FALSE in the corresponding R chunks.
+```{r, include=FALSE}
+
+```
+
+Your data analysis should include substantial data exploration including graphical and numerical summaries which do not appear in the final report. You may exclude such analysis by using include=FALSE in the corresponding R chunks.The methods of analysis should primarily be using methods discussed from the course.
+```{r, include = FALSE}
+
+```
+### Introduction
+####Describe the question or questions of interest and the motivation for the analysis.
+####Conclude the introduction with a thesis statement.A thesis statement comprises one or two declarative sentences that summarize the main point of the report and clearly makes an assertion and communicates to the reader the position the authors have taken on the topic.
+    
+    
+### Background
+#### Describe the data, how it was collected, what the variables mean.
+#### Cite the source of your data.
+#### Describe any background information needed to better comprehend the question or questions you are posing and how the data relates to the question.
+#### Describe any unusual factors which may affect interpretation of results.
+#### Describe what you intend to do in the rest of the report
+    
+### Analysis
+ Include numerical and graphical summaries of the data
+Make sure to include at least one graphical display of the data that best supports your main conclusions for each of your primary questions.
+For each inference you make, briefly describe the method you use and what the results are.
+Provide evidence to support each of your claims.
+This section should not include interpretation of results. Leave that for the discussion.
+### Discussion
+#### Provide broader interpretations of your analysis and describe how to interpret your results with respect to your questions of interest.
+#### Discuss any potential short-comings of the analysis.
+#### Discuss potential future directions for additional work
+#### New questions
+#### Different methods to address the same questions
+#### New data you might collect to refine your understanding
+#### Summarize your primary conclusions and the primary evidence that supports these conclusions.
+    
+    
+#### References
+        In the R Markdown file, you may automatically cite other resources by using a caret followed by the reference between square brackets: ^[your reference text] which will place a marker at this location and a footnote at the end of the document.
