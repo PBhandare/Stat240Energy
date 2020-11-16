@@ -1,0 +1,85 @@
+---
+title: 'Project Proposal Group 6: 325'
+author: "Lindsey Fisher"
+date: "11/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Project Proposal
+
+### The names of the students in the group.
+Lindsey Fisher
+Param Bhandare
+YUNQING XIAO
+
+### A brief description of how the group will communicate and work together.
+After discussion on Thursday at 10:45 am CT
+
+### What platforms will the group use to communicate and share documents.
+Google Documents, UW-Madison Zoom 
+
+### The question or questions of interest that motivate the planned study.
+
+#### 1. Carbon Dioxide Emissions by Sector and Source (DATA SET 1)
+>How does total emissions vary by each year? By sector?
+>Which sector produces the most emissions? Does this vary by year?
+>Looking at total emissions by fuel? Which is the greatest contributor in 2011? Which has the greatest projected consumption in 2020?
+
+#### 2.Energy Consumption by Sector and Source  (DATA SET 2)
+>Which sector uses the most renewables? Which uses the most non-renewables?
+>Which energy source is utilized the most in each sector?
+>Which sector has the highest growth rate for each energy source?
+>Which energy source has the highest growth rate over all? 
+>How does energy consumption vary by year?
+
+#### 3.Compare projections in 2011 to actual measures in 2020(DATA SET 3 and 4)
+
+```{r}
+energyemmisions2011 = read_csv("emissions2011.csv")
+head(energyemmisions2011)
+
+energyconsumption2011 = read_csv("consumption2011.csv")
+head(energyconsumption2011)
+
+energyemissions2020 = read_csv("emissions2020.csv")
+head(energyemissions2020)
+
+energyconsumption2020 = read_csv("consumption2020.csv")
+head(energyconsumption2020)
+
+```
+
+### Data sources: 
+
+
+
+>> Annual Energy Outlook 2020: Table 18. Energy-Related Carbon Dioxide Emissions by Sector and Source
+>> Annual Energy Outlook 2020: Table: Table 2. Energy Consumption by Sector and Source
+ 
+ https://www.eia.gov/outlooks/aeo/data/browser/#/?id=17-AEO2020&cases=ref2020&sourcekey=0
+ 
+
+>> Annual Energy Outlook 2011: Carbon Dioxide Emissions by Sector and Source
+
+https://openei.org/doe-opendata/dataset/140e63e5-f215-4e15-a0e0-b1784778ff0c
+
+>> Annual Energy Outlook 2011: Energy Consumption by Sector and Source, United States
+
+https://openei.org/doe-opendata/dataset/4036890e-e139-4759-87ef-7814e814234e
+
+
+### Methods 
+
+>> We can use scatter plots or bar graph to show the relationship between each variable and the change of years
+>> We can use linear regression model to see the trend of data throughout the year
+>> We can use various join method to combine different data together to see how they affect each other
+
+### Possible model 
+
+>> We can build a linear model or other statistical distribution model to find the relationship between each variable
+>> Based on the models we build we can compare the actual results in the model with our predictions
