@@ -1,0 +1,174 @@
+---
+title: "Final Project Draft"
+author: "Lindsey Fisher"
+date: "11/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warnings=FALSE)
+library(tidyverse)
+library(lubridate)
+source("../scripts/viridis.R")
+source("../scripts/ggprob.R")
+```
+
+## An Analysis of US Enenrgy Related Consumption and Emmisions Data
+### Group Members: Lindsey Fisher, Param Bhandare, Yunqing Xiao
+
+You should turn in three (or more) documents:
+One (or more) files with your data.
+An R Markdown file with your analysis.
+A knitted HTML file which contains your full report.
+The format of the report is described in detail below.
+Data
+Upload one or more data files that can be read in with code in the R Markdown file to replicate your analysis.
+
+
+
+The R Markdown file should include a section in which you read in the raw data files and transform the data for analysis. Exclude this R code from the knitted HTML report by using include=FALSE in the corresponding R chunks.
+```{r, include = FALSE}
+E2020 =read_csv("../data/emissions2020.csv")
+C2020 = read_csv("../data/consumption2020.csv")
+
+E2020 = E2020 %>% 
+    pivot_longer(
+   cols = c(3:34),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "MmtCO2e",
+   values_drop_na = TRUE) 
+    
+E2020A = E2020 %>%    
+select(Year, Sector, Source, MmtCO2e,`Growth (2019-2050)`) %>% 
+    filter(Sector != "NA")
+
+
+C2020A = C2020 %>%
+    pivot_longer(
+   cols = c(3:34),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "quads",
+   values_drop_na = TRUE)
+
+C2020A = C2020A %>% 
+select(Year, Sector, Source, quads,`Growth (2019-2050)`) %>% 
+ filter(Source != "Total") %>% 
+    arrange(Year)
+
+```
+
+Your data analysis should include substantial data exploration including graphical and numerical summaries which do not appear in the final report. You may exclude such analysis by using include=FALSE in the corresponding R chunks.The methods of analysis should primarily be using methods discussed from the course.    
+    
+```{r, include = FALSE}
+BySource = E2020A %>%
+    filter(Year == "2020" & Source != "Total") %>% 
+    group_by(Source,Sector) %>% 
+    mutate(sumsource = sum(MmtCO2e))%>%
+    ggplot(aes(x = Source, y = sumsource))+
+    geom_col()
+BySource
+```
+
+```{r}
+BySector = E2020A %>% 
+    filter(Year == "2020" & Sector != "Total by Fuel") %>% 
+    group_by(Sector) %>% 
+    summarise(sumemission = sum(MmtCO2e)) %>% 
+    arrange(desc(sumemission)) %>%
+    ggplot(aes(x = Sector, y = sumemission))+
+    geom_col()
+BySector
+```
+
+```{r}
+E2011 =read_csv("../data/emissions2011.csv")
+C2011 = read_csv("../data/consumption2011.csv")
+
+E2011 = E2011 %>% 
+    pivot_longer(
+   cols = c(3:30),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "MmtCO2e",
+   values_drop_na = TRUE) 
+    
+E2011A = E2011 %>%    
+select(Year, Sector, Source, MmtCO2e,"Growth Rate (2009-2035)") %>% 
+    filter(Sector != "NA")
+
+
+C2011A = C2011 %>%
+    pivot_longer(
+   cols = c(3:30),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "quads",
+   values_drop_na = TRUE)
+
+C2011A = C2011A %>% 
+select(Year, Sector, Source, quads,"Growth Rate (2009-2035)") %>% 
+ filter(Source != "Total") %>% 
+    arrange(Year)
+
+```
+
+```{r, include = FALSE}
+E2011A %>%
+    filter(Year == "2011" & Source != "Total") %>% 
+    group_by(Source,Sector) %>% 
+    mutate(sumsource = sum(MmtCO2e))%>%
+    ggplot(aes(x = Source, y = sumsource))+
+    geom_col()
+```
+
+```{r}
+E2011A %>% 
+    filter(Year == "2011" & Sector != "Total by Fuel") %>% 
+    group_by(Sector) %>% 
+    summarise(sumemission = sum(MmtCO2e)) %>% 
+    arrange(desc(sumemission)) %>%
+    ggplot(aes(x = Sector, y = sumemission))+
+    geom_col()
+```
+
+
+
+### Introduction
+####Describe the question or questions of interest and the motivation for the analysis.
+####Conclude the introduction with a thesis statement.A thesis statement comprises one or two declarative sentences that summarize the main point of the report and clearly makes an assertion and communicates to the reader the position the authors have taken on the topic.
+
+We were interested in looking at something environmentally related, so we chose US energy consumption and emissions. We chose two reports from the Annual Energy Outlook (AEO) report from the US Energy Information Administration. We chose to look at the AEO published in 2011, and the AEO published in 2020. We chose these reports because they are a decade apart and will serve as a comparison to see if we have reduced emissions and consumption overall. We believe there is a lot of relationships between variables to be examined and uncovered. We are interested in relationships between the variables in each of the data sets as well as comparing the variables across the separate data sets to look for trends. We hope to use this analysis to locate key areas where the US is doing well in reducing emissions and consumption and areas where we need to focus on improvement. We hope to assess the validity of the AEOs projections by comparing the future projections in the 2011 report to the observed measures from the 2020 report.   
+    
+### Background
+#### Describe the data, how it was collected, what the variables mean.
+#### Cite the source of your data.
+Emissions Data: 
+The emissions data measures outputs into the atmosphere in Million Metric Ton CO2 Equivalents. This is a measure of global warming potential. CO2 is a well know gas that traps heat in the atmosphere, however, there are other gasses which trap heat at a much higher magnitude. The measurement is called CO2 equivalents because it measures the amount of total global warming potential as a factor of the magnitude of one CO2 molecules warming potential. It is separated out by sector: residential, commercial, industrial, transportation, and electric power. As well as by fuel source: petroleum, natural gas, coal, and electric power generation, and an “other” category.  The data was collected by the U.S Environmental Information Administration and is published on their website (https://www.eia.gov/outlooks/aeo/data) for public viewing. The projections were made using the AEO National Energy Modeling System. 
+
+Consumption Data: 
+The consumption data measures how much energy was used in units of Quads. A Quad is a unit of energy equal to 10¹⁵ British Thermal Units, or 1.055 × 10¹⁸ joules in SI units. The US Department of Energy adopted the use of quads as their unit of energy use measurement for national and international reports.  The consumption data reports energy consumption by sector and power source. Sectors include residential, commercial, industrial, transportation, electric power, and delivered energy. The energy sources for consumption are more complex and vary with in each sector. The data was collected by the U.S Environmental Information Administration and is published on their website (https://www.eia.gov/outlooks/aeo/data) for public viewing. The projections were made using the AEO National Energy Modeling System. 
+
+#### Describe any background information needed to better comprehend the question or questions you are posing and how the data relates to the question.
+#### Describe any unusual factors which may affect interpretation of results.
+#### Describe what you intend to do in the rest of the report
+    
+### Analysis
+ Include numerical and graphical summaries of the data
+Make sure to include at least one graphical display of the data that best supports your main conclusions for each of your primary questions.
+For each inference you make, briefly describe the method you use and what the results are.
+Provide evidence to support each of your claims.
+This section should not include interpretation of results. Leave that for the discussion.
+### Discussion
+#### Provide broader interpretations of your analysis and describe how to interpret your results with respect to your questions of interest.
+#### Discuss any potential short-comings of the analysis.
+#### Discuss potential future directions for additional work
+#### New questions
+#### Different methods to address the same questions
+#### New data you might collect to refine your understanding
+#### Summarize your primary conclusions and the primary evidence that supports these conclusions.
+    
+    
+#### References
+        In the R Markdown file, you may automatically cite other resources by using a caret followed by the reference between square brackets: ^[your reference text] which will place a marker at this location and a footnote at the end of the document.
