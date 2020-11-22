@@ -100,6 +100,68 @@ Make sure to include at least one graphical display of the data that best suppor
 For each inference you make, briefly describe the method you use and what the results are.
 Provide evidence to support each of your claims.
 This section should not include interpretation of results. Leave that for the discussion.
+
+
+>How does total emissions vary by each year? Which source is the greatest contributer for each year?
+
+```{r}
+
+totalE = E2020A %>% 
+filter(Source == "Total") %>% 
+arrange(YearNum)
+
+ggplot(totalE,aes(YearNum,MmtCO2e))+
+    stat_smooth()+
+    geom_point()
+
+sourcetopn = E2020A %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
+    group_by(YearNum) %>% 
+    slice_max(order_by = MmtCO2e, n = 3)
+
+ggplot(sourcetopn, aes(YearNum, MmtCO2e, color = Source))+
+    geom_point()
+    
+  ```
+>Which sector produces the most emissions? Does this vary by year?
+```{r}
+
+```
+
+>Looking at total emissions by fuel source? Which is the greatest contributor in 2011? Which has the greatest projected consumption in 2020?
+```{r}
+
+```
+
+
+
+>Which sector uses the most renewables? Which uses the most non-renewables?
+```{r}
+
+```
+
+>Which energy source is utilized the most in each sector?
+```{r}
+
+```
+
+>Which sector has the highest growth rate for each energy source?
+```{r}
+
+```
+
+>Which energy source has the highest growth rate over all? 
+```{r}
+
+```
+
+>How does energy consumption vary by year?
+```{r}
+
+```
+
+
+>Compare projections in 2011 to actual measures in 2020
 ### Discussion
 #### Provide broader interpretations of your analysis and describe how to interpret your results with respect to your questions of interest.
 #### Discuss any potential short-comings of the analysis.
