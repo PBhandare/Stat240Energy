@@ -125,10 +125,15 @@ ggplot(sourcetopn, aes(YearNum, MmtCO2e, color = Source))+
   ```
 >Which sector produces the most emissions? Does this vary by year?
 ```{r}
-
+sectormost = E2020A %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
+    group_by(YearNum, Sector) %>% 
+    top_n(MmtCO2e, n = 1)
+    
+ggplot(sectormost, aes(YearNum,MmtCO2e, color = Sector))+
+    geom_point()    
 ```
-
->Looking at total emissions by fuel source? Which is the greatest contributor in 2011? Which has the greatest projected consumption in 2020?
+>Looking at total emissions by fuel source? Which is the greatest contributor? Which has the greatest projected consumption?
 ```{r}
 
 ```
@@ -137,6 +142,17 @@ ggplot(sourcetopn, aes(YearNum, MmtCO2e, color = Source))+
 
 >Which sector uses the most renewables? Which uses the most non-renewables?
 ```{r}
+C2020Renew = C2020A %>%
+mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable",
+Source != "Renewable Energy" ~ "Non-Renewable")) %>%
+filter(Sector != "Energy Use & Related Statistics" & Sector != "Unspecified Sector") %>% 
+group_by(Sector, RenewableResource) %>% 
+drop_na() %>% 
+summarise(energysum = sum(quads)) %>% 
+arrange(desc(energysum))
+
+ggplot(C2020Renew, aes(RenewableResource, energysum, fill = Sector))+
+geom_col(position = "dodge")
 
 ```
 
