@@ -101,8 +101,7 @@ For each inference you make, briefly describe the method you use and what the re
 Provide evidence to support each of your claims.
 This section should not include interpretation of results. Leave that for the discussion.
 
-
->How does total emissions vary by each year? Which source is the greatest contributer for each year?
+#### 1. How does total emissions vary by each year? Which source is the greatest contributer for each year?
 
 ```{r}
 
@@ -121,9 +120,11 @@ sourcetopn = E2020A %>%
 
 ggplot(sourcetopn, aes(YearNum, MmtCO2e, color = Source))+
     geom_point()
-    
-  ```
->Which sector produces the most emissions? Does this vary by year?
+
+```
+
+#### 2.Which sector produces the most emissions? Does this vary by year?
+
 ```{r}
 sectormost = E2020A %>% 
     filter(Source != "Total" & Sector != "Total by Fuel") %>% 
@@ -131,17 +132,21 @@ sectormost = E2020A %>%
     top_n(MmtCO2e, n = 1)
     
 ggplot(sectormost, aes(YearNum,MmtCO2e, color = Sector))+
-    geom_point()    
+    geom_point()
+    
 ```
->Looking at total emissions by fuel source? Which is the greatest contributor? Which has the greatest projected consumption?
+
+#### 3.Looking at total emissions by fuel source? Which is the greatest contributor? Which has the greatest projected consumption?
 ```{r}
 
 ```
 
 
 
->Which sector uses the most renewables? Which uses the most non-renewables?
+#### 4. Which sector uses the most renewables? Which uses the most non-renewables?
+
 ```{r}
+
 C2020Renew = C2020A %>%
 mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable",
 Source != "Renewable Energy" ~ "Non-Renewable")) %>%
@@ -152,32 +157,38 @@ summarise(energysum = sum(quads)) %>%
 arrange(desc(energysum))
 
 ggplot(C2020Renew, aes(RenewableResource, energysum, fill = Sector))+
-geom_col(position = "dodge")
+geom_col(position = "dodge")+
+ggtitle()
 
 ```
 
->Which energy source is utilized the most in each sector?
+#### 5.Which energy source is utilized the most in each sector?
 ```{r}
 
 ```
 
->Which sector has the highest growth rate for each energy source?
+#### 6. Which sector has the highest growth rate for each energy source?
 ```{r}
 
 ```
 
->Which energy source has the highest growth rate over all? 
+#### 7. Which energy source has the highest growth rate over all? 
 ```{r}
 
 ```
 
->How does energy consumption vary by year?
+#### 8. How does energy consumption vary by year?
 ```{r}
 
 ```
 
 
->Compare projections in 2011 to actual measures in 2020
+#### 9.Compare projections in 2011 to actual measures in 2020. Compare slope and intercept of the trend lines.
+```{r}
+
+```
+
+
 ### Discussion
 #### Provide broader interpretations of your analysis and describe how to interpret your results with respect to your questions of interest.
 #### Discuss any potential short-comings of the analysis.
