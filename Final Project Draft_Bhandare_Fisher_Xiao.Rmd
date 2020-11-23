@@ -210,7 +210,13 @@ ratesource = C2020B %>%
 
 #### 8. How does energy consumption vary by year?
 ```{r}
+ConsumptionByYear = C2020B %>% 
+    filter(Source =="Total") %>% 
+    group_by(YearN) %>% 
+    summarise(sumquads = sum(quads))
 
+ggplot(ConsumptionByYear, aes(YearN, sumquads))+
+    geom_line()
 ```
 
 
