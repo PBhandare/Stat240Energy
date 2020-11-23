@@ -1,0 +1,42 @@
+---
+title: "Test"
+author: "Param"
+date: "11/22/2020"
+output: html_document
+---
+
+ABCD
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(lubridate)
+library(reshape)
+library(fs)
+```
+
+ABCD
+
+```{r warning = FALSE, message = FALSE}
+file_paths <- fs::dir_ls("Data/Consumption")
+
+consumption_data <- list()
+
+for (i in seq_along(file_paths)) {
+   consumption_data[[i]] <- read_csv(file = file_paths[[i]])
+}
+
+consumption_data <- set_names(consumption_data, file_paths)
+```
+
+ABCD
+
+```{r}
+test <- as.data.frame(consumption_data[1])
+
+test <- test %>%
+  filter(Data.Consumption.C2010.csv.Source == "Total")
+
+test <- test[(1, 3:15)]
+```
