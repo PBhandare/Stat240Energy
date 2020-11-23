@@ -138,7 +138,19 @@ ggplot(sectormost, aes(YearNum,MmtCO2e, color = Sector))+
 
 #### 3.Looking at total emissions by fuel source? Which is the greatest contributor? Which has the greatest projected consumption?
 ```{r}
+BySourceTotal = E2020A %>% 
+    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total")
 
+BySourceTotal2019 = E2020A %>% 
+    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total" & NumericYear == 2019)
+
+ggplot(BySourceTotal2019, aes(Source,MmtCO2e, fill = Source))+
+    geom_col()
+
+ggplot(BySourceTotal, aes(NumericYear, MmtCO2e, color = Source))+
+    geom_line()+
+    geom_smooth(se = FALSE, method = "lm")
+    
 ```
 
 
@@ -164,17 +176,36 @@ ggtitle()
 
 #### 5.Which energy source is utilized the most in each sector?
 ```{r}
+sectormostconsume = C2020B %>%
+    filter(Source != "Total" & YearN == 2019) %>% 
+    filter(Sector != "Energy Use & Related Statistics" & Sector != "NA") %>% 
+    group_by(Sector) %>%
+    slice_max(order_by = quads, n = 1)
 
+ggplot(sectormostconsume, aes(Sector, quads, fill = Source))+
+geom_col()
 ```
 
 #### 6. Which sector has the highest growth rate for each energy source?
 ```{r}
+ratesector = C2020B %>%
+    filter(YearN == 2019 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
+    group_by(Sector, YearN) %>% 
+    slice_max(order_by = RateNumeric, n = 1) %>% 
+    arrange(desc(RateNumeric))
+    
+    
+ggplot(ratesector, aes(Sector, RateNumeric, fill = Source))+
+    geom_col(position = "dodge")
 
 ```
 
 #### 7. Which energy source has the highest growth rate over all? 
 ```{r}
-
+ratesource = C2020B %>%
+    filter(YearN == 2019 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
+    slice_max(order_by = RateNumeric, n = 1) %>%
+    select(Source,Sector,`Growth (2019-2050)`)
 ```
 
 #### 8. How does energy consumption vary by year?
