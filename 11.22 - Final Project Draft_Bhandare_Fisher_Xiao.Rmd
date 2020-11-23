@@ -9,8 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warnings=FALSE)
 library(tidyverse)
 library(lubridate)
-source("../scripts/viridis.R")
-source("../scripts/ggprob.R")
+source("ggprob.R")
 ```
 
 ## An Analysis of US Enenrgy Related Consumption and Emmisions Data
@@ -28,8 +27,8 @@ Upload one or more data files that can be read in with code in the R Markdown fi
 
 The R Markdown file should include a section in which you read in the raw data files and transform the data for analysis. Exclude this R code from the knitted HTML report by using include=FALSE in the corresponding R chunks.
 ```{r, include = FALSE}
-E2020 =read_csv("../data/emissions2020.csv")
-C2020 = read_csv("../data/consumption2020.csv")
+E2020 =read_csv("emissions2020.csv")
+C2020 = read_csv("consumption2020.csv")
 
 E2020 = E2020 %>% 
     pivot_longer(
@@ -83,8 +82,8 @@ BySector
 ```
 
 ```{r}
-E2011 =read_csv("../data/emissions2011.csv")
-C2011 = read_csv("../data/consumption2011.csv")
+E2011 = read_csv("emissions2011.csv")
+C2011 = read_csv("consumption2011.csv")
 
 E2011 = E2011 %>% 
     pivot_longer(
@@ -132,7 +131,57 @@ E2011A %>%
     ggplot(aes(x = Sector, y = sumemission))+
     geom_col()
 ```
+```{r}
+E2015 =read_csv("emissions2015.csv")
+C2015 = read_csv("consumption2015.csv")
 
+E2015 = E2015 %>% 
+    pivot_longer(
+   cols = c(3:30),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "MmtCO2e",
+   values_drop_na = TRUE) 
+    
+E2015A = E2015 %>%    
+select(Year, Sector, Source, MmtCO2e,"Growth (2013-2040)") %>% 
+    filter(Sector != "NA")
+
+
+C2015A = C2015 %>%
+    pivot_longer(
+   cols = c(3:30),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "quads",
+   values_drop_na = TRUE)
+
+C2015A = C2015A %>% 
+select(Year, Sector, Source, quads,"Growth (2013-2040)") %>% 
+ filter(Source != "Total") %>% 
+    arrange(Year)
+```
+
+```{r, include = FALSE}
+E2015A %>%
+    filter(Year == "2015" & Source != "Total") %>% 
+    group_by(Source,Sector) %>% 
+    mutate(sumsource = sum(MmtCO2e))%>%
+    ggplot(aes(x = Source, y = sumsource))+
+    geom_col()
+```
+
+```{r}
+E2015A %>% 
+    filter(Year == "2015" 
+           & Sector != "Total by Fuel" 
+           & Sector != "Carbon Dioxide Emissions") %>% 
+    group_by(Sector) %>% 
+    summarise(sumemission = sum(MmtCO2e)) %>% 
+    arrange(desc(sumemission)) %>%
+    ggplot(aes(x = Sector, y = sumemission))+
+    geom_col()
+```
 
 
 ### Introduction
@@ -160,6 +209,64 @@ Make sure to include at least one graphical display of the data that best suppor
 For each inference you make, briefly describe the method you use and what the results are.
 Provide evidence to support each of your claims.
 This section should not include interpretation of results. Leave that for the discussion.
+
+>How does total emissions vary by each year? Which source is the greatest contributer for each year?
+```{r}
+
+totalE = E2020A %>% 
+filter(Source == "Total") %>% 
+arrange(YearNum)
+
+ggplot(totalE,aes(YearNum,MmtCO2e))+
+    stat_smooth()+
+    geom_point()
+
+sourcetopn = E2020A %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
+    group_by(YearNum) %>% 
+    slice_max(order_by = MmtCO2e, n = 3)
+
+ggplot(sourcetopn, aes(YearNum, MmtCO2e, color = Source))+
+    geom_point()
+    
+```
+
+>Which sector produces the most emissions? Does this vary by year?
+```{r}
+
+```
+
+>Looking at total emissions by fuel source? Which is the greatest contributor in 2011? Which has the greatest projected consumption in 2020?
+```{r}
+
+```
+
+
+>Which sector uses the most renewables? Which uses the most non-renewables?
+```{r}
+
+```
+
+>Which energy source is utilized the most in each sector?
+```{r}
+
+```
+
+>Which sector has the highest growth rate for each energy source?
+```{r}
+
+```
+
+>Which energy source has the highest growth rate over all? 
+```{r}
+
+```
+
+>How does energy consumption vary by year?
+```{r}
+
+```
+
 ### Discussion
 #### Provide broader interpretations of your analysis and describe how to interpret your results with respect to your questions of interest.
 #### Discuss any potential short-comings of the analysis.
