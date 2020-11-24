@@ -516,7 +516,13 @@ Actual2019 = C2020B %>%
 ggplot(Actual2019, aes(Sector, quads, fill = Sector, alpha = 0.5))+
     geom_col()
 ```
-
+```{r}
+projection_2011 = C2011A %>% 
+    filter(str_detect(Source, "Total"))%>%
+    filter(str_detect(Year, "2011"))
+ggplot(projection_2011, aes(Sector, quads, fill = Sector))+
+    geom_col()
+```
 
 ### Discussion
 
