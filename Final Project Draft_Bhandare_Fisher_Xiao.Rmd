@@ -524,8 +524,6 @@ ggplot(projection_2011, aes(Sector, quads, fill = Sector))+
     geom_col()
 ```
 ```{r}
-library(reshape)
-
 ConsumptionByYear2015 <- ConsumptionByYear2015 %>%
     mutate(Dataset = "2015")
 
@@ -534,8 +532,19 @@ ConsumptionByYear2020 <- ConsumptionByYear2020 %>%
 
 consumptions_2015_2020_combined <- bind_rows(ConsumptionByYear2015, ConsumptionByYear2020)
 
+sourcetopn2015 <- sourcetopn2015 %>%
+    mutate(Dataset = "2015")
+
+sourcetopn2020 <- sourcetopn2020 %>%
+    mutate(Dataset = "2020")
+
+emission_2015_2020_combined <- bind_rows(sourcetopn2015, sourcetopn2020)
+
 ggplot(consumptions_2015_2020_combined, aes(NumericYear, sumquads, color = Dataset)) +
     geom_line()
+    
+ggplot(emission_2015_2020_combined, aes(YearNum, MmtCO2e, color = Dataset)) +
+    geom_point()
 ```
 
 ### Discussion
