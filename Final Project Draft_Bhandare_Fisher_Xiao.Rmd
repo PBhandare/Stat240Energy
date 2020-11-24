@@ -550,12 +550,19 @@ ggplot(emission_2015_2020_combined, aes(YearNum, MmtCO2e, color = Dataset)) +
 ### Discussion
 
 #### Provide broader interpretations of your analysis and describe how to interpret your results with respect to your questions of interest.
+- for data in 2011 delivered energy consumptions contribute the most among all sectors of energy and coal is the most commonly used source of energy followed by electricity and petroleium. Transportation and electric power produces the most parts of the energy.And a huge portion of the energy is used for US GDP. Through these comparision, it will be interesting to look at how it changed trhoughout the decade.
 #### Discuss any potential short-comings of the analysis.
+- one of the potential short-comings of this analysis will be the sized of our datasets are slightly different which might caused a little inaccuracy in final analysis
 #### Discuss potential future directions for additional work
+- we can look more deeply into how different variables changes throughout the decades and discuss the potential caused and effect of the changes such as how the a environmental related policy or crisis impacted the energy use or how some major changes in economy or manufacturing market affect the use of energy
 #### New questions
+ - my new questions is can we use some of the statistc model to predict the future changes based on previous year's dataset which we can later use to compare with the actual situation and talk about why there are potential difference between prediction and the reality
 #### Different methods to address the same questions
+ - Instead of comparing all sectors and sources, I will like to look closely at a specific source and sector and study it more in-depth
 #### New data you might collect to refine your understanding
+- I will like to look at some data that related to the variable which changed the most throughout the decade and study the reason behind the change
 #### Summarize your primary conclusions and the primary evidence that supports these conclusions.
+- In conclusion, based on the previous analysis, I would like to predict that the consumption of energy continue to increase in the next decade but other source of the energy will surpase the domination of energy use of coal becasue we can see the curve of electric power increasing with a higher slope the coal in 2011
     
     
 #### References
