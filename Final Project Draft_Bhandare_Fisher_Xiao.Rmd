@@ -509,7 +509,7 @@ ggplot(ConsumptionByYear_2011, aes(as.numeric(Year), sumquads))+
     geom_line()
 ```
 
-#### 9.Compare projections in 2010 to actual measures in 2019. Compare slope and intercept of the trend lines.
+#### 9.Compare projections in 2010, 2014 to actual measures in 2019. Compare slope and intercept of the trend lines.
 ```{r}
 Actual2019 = C2020B %>% 
     filter(Year == "2019" & Source == "Total") 
@@ -522,6 +522,20 @@ projection_2011 = C2011A %>%
     filter(str_detect(Year, "2011"))
 ggplot(projection_2011, aes(Sector, quads, fill = Sector))+
     geom_col()
+```
+```{r}
+library(reshape)
+
+ConsumptionByYear2015 <- ConsumptionByYear2015 %>%
+    mutate(Dataset = "2015")
+
+ConsumptionByYear2020 <- ConsumptionByYear2020 %>%
+    mutate(Dataset = "2020")
+
+consumptions_2015_2020_combined <- bind_rows(ConsumptionByYear2015, ConsumptionByYear2020)
+
+ggplot(consumptions_2015_2020_combined, aes(NumericYear, sumquads, color = Dataset)) +
+    geom_line()
 ```
 
 ### Discussion
