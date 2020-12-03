@@ -10,16 +10,75 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(ggplot2)
 library(lubridate)
+library(cowplot)
+library(patchwork)
 ```
 
 ## An Analysis of US Enenrgy Related Consumption and Emmisions Data
-### Group Members: Lindsey Fisher, Param Bhandare, Yunqing Xiao
+### Group Members: Lindsey Fisher(2020 Data), Param Bhandare(2015 Data), Yunqing Xiao(2011 Data)
 
 ```{r, include=FALSE}
-
+E2011 =read_csv("emissions2011.csv")
+C2011 = read_csv("consumption2011.csv")
+E2015 = read_csv("emissions2015.csv")
+C2015 = read_csv("consumption2015.csv")
 E2020 = read_csv("emissions2020.csv")
 C2020 = read_csv("consumption2020.csv")
 
+
+E2011 = E2011 %>% 
+    pivot_longer(
+   cols = c(3:30),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "MmtCO2e",
+   values_drop_na = TRUE) 
+    
+E2011A = E2011 %>%
+mutate(Year = as.numeric(as.character(unlist(E2011$Year))),
+       GrowthRate = as.numeric(sub("%"," ",E2011$`Growth Rate (2009-2035)`))) %>% 
+select(Year, Sector, Source, MmtCO2e,GrowthRate) %>% 
+    filter(Sector != "NA")
+
+C2011 = C2011 %>%
+    pivot_longer(
+   cols = c(3:30),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "quads",
+   values_drop_na = TRUE)
+
+C2011 = C2011 %>% 
+mutate(Year = as.numeric(as.character(unlist(C2011$Year))),
+       GrowthRate = as.numeric(sub("%"," ",C2011$`Growth Rate (2009-2035)`))) %>% 
+select(Year, Sector, Source, quads,GrowthRate) 
+
+
+E2015 = E2015 %>% 
+    pivot_longer(
+        cols = c(3:31),
+        names_to = "Year",
+        names_prefix = "Year",
+        values_to = "MmtCO2e",
+        values_drop_na = TRUE
+    )
+E2015A = E2015 %>%    
+    mutate(YearNum = as.numeric(as.character(unlist(E2015$Year)))) %>%
+    filter(Sector != "NA")
+    
+C2015A = C2015 %>%
+    pivot_longer(
+        cols = c(3:31),
+        names_to = "Year",
+        names_prefix = "Year",
+        values_to = "quads",
+        values_drop_na = TRUE
+    )
+    
+C2015B = C2015A %>% 
+    mutate(Year = as.numeric(as.character(unlist(C2015A$Year))),
+       GrowthRate = as.numeric(sub("%","",C2015A$`Growth (2013-2040)`))) %>% 
+         select(Year, Sector,Source, quads, GrowthRate)
 
 E2020A = E2020 %>% 
     pivot_longer(
@@ -44,70 +103,9 @@ C2020A = C2020 %>%
    values_drop_na = TRUE)
 
 C2020B = C2020A %>% 
-mutate(YearN = as.numeric(as.character(unlist(C2020A$Year))),
-       RateNumeric = as.numeric(sub("%","",C2020A$`Growth (2019-2050)`))) 
-```
-
-```{r}
-E2015 = read_csv("emissions2015.csv")
-C2015 = read_csv("consumption2015.csv")
-
-E2015 = E2015 %>% 
-    pivot_longer(
-        cols = c(3:31),
-        names_to = "Year",
-        names_prefix = "Year",
-        values_to = "MmtCO2e",
-        values_drop_na = TRUE
-    )
-
-E2015A = E2015 %>%    
-    mutate(YearNum = as.numeric(as.character(unlist(E2015$Year)))) %>%
-    filter(Sector != "NA")
-    
-C2015A = C2015 %>%
-    pivot_longer(
-        cols = c(3:31),
-        names_to = "Year",
-        names_prefix = "Year",
-        values_to = "quads",
-        values_drop_na = TRUE
-    )
-    
-C2015B = C2015A %>% 
-    mutate(NumericYear = sapply(Year, as.numeric),
-           RateNumeric = as.numeric(sub("%","",C2015A$'Growth (2013-2040)')))
-```
-
-```{r}
-E2011 =read_csv("emissions2011.csv")
-C2011 = read_csv("consumption2011.csv")
-
-E2011 = E2011 %>% 
-    pivot_longer(
-   cols = c(3:30),
-   names_to = "Year",
-   names_prefix = "Year",
-   values_to = "MmtCO2e",
-   values_drop_na = TRUE) 
-    
-E2011A = E2011 %>%    
-select(Year, Sector, Source, MmtCO2e,"Growth Rate (2009-2035)") %>% 
-    filter(Sector != "NA")
-
-
-C2011A = C2011 %>%
-    pivot_longer(
-   cols = c(3:30),
-   names_to = "Year",
-   names_prefix = "Year",
-   values_to = "quads",
-   values_drop_na = TRUE)
-
-C2011A = C2011A %>% 
-select(Year, Sector, Source, quads,"Growth Rate (2009-2035)") %>% 
- filter(Source != "Total") %>% 
-    arrange(Year)
+mutate(Year = as.numeric(as.character(unlist(C2020A$Year))),
+       GrowthRate = as.numeric(sub("%","",C2020A$`Growth (2019-2050)`))) %>% 
+    select(Year, Sector, Source, quads,GrowthRate) 
 
 ```
 
@@ -127,119 +125,224 @@ The consumption data measures how much energy was used in units of Quads. A Quad
 ### Analysis
 
 
-#### 1. How does total emissions vary by each year?Which source is the greatest contributer for each year?
-
-```{r}
-totalE = E2020B %>% 
-filter(Source == "Total") %>% 
-arrange(NumYear)
-
-ggplot(totalE,aes(NumYear,MmtCO2e))+
-    stat_smooth(se = FALSE)+
-    geom_point()+
-    ggtitle("Total Emmisions Per Year: AEO 2020 Projections")+
-    ylab("Emissions(MmtCO2e)")+
-    xlab("Year")
-
-sourcetopn = E2020B %>% 
-    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
-    group_by(NumYear) %>% 
-    slice_max(order_by = MmtCO2e, n = 3)
-
-ggplot(sourcetopn, aes(NumYear, MmtCO2e, color = Source))+
-    geom_point()+
-    ggtitle("Total Emmisions Per Year: AEO 2020 Projections")+
-    ylab("Emissions(MmtCO2e)")+
-    xlab("Year")
-```
+#### 1. How does total emissions vary by each year? Which source is the greatest contributer for each year?
 
 ```{r}
 
 total_2011 = E2011A %>% 
-    filter(!str_detect(Source, "Total"))%>%
+    filter(Source == "Total" & Sector == "TotalbyFuel") %>% 
     arrange(Year)
-    
-
-ggplot(total_2011,aes(Year,MmtCO2e))+
-    stat_smooth()+
-    geom_point()
 
 sourcetopn_2011 = E2011A %>% 
     filter(!str_detect(Sector,"Total by Fuel")) %>% 
     filter(!str_detect(Source, "Total"))%>%
     group_by(Year) %>% 
-    slice_max(order_by = MmtCO2e, n = 3)
+    slice_max(order_by = MmtCO2e, n = 1)
 
-ggplot(sourcetopn_2011, aes(Year, MmtCO2e, color = Source))+
-    geom_point()
-
-```
-```{r}
 totalE2015 = E2015A %>% 
     filter(Source == "Total") %>% 
     arrange(YearNum)
 
-ggplot(totalE2015, aes(YearNum,MmtCO2e)) +
-    stat_smooth() +
-    geom_point()
-
 sourcetopn2015 = E2015A %>% 
-    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
+    filter(!str_detect(Sector,"Total by Fuel")) %>% 
+    filter(!str_detect(Source, "Total"))%>%
     group_by(YearNum) %>% 
-    slice_max(order_by = MmtCO2e, n = 3)
+    slice_max(order_by = MmtCO2e, n = 1)
 
-ggplot(sourcetopn2015, aes(YearNum, MmtCO2e, color = Source))+
-    geom_point()
- 
+totalE2020 = E2020B %>% 
+filter(Source == "Total") %>% 
+arrange(NumYear)
+
+sourcetopn2020 = E2020B %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
+    group_by(NumYear) %>% 
+    slice_max(order_by = MmtCO2e, n = 1)
+
+```
+
+##### Total Emmisions By Year 
+
+```{r}
+etotal2011 = ggplot(total_2011,aes(Year,MmtCO2e))+
+    stat_smooth(se = FALSE)+
+    geom_point()+
+    ggtitle("Total Emmisions Per Year: AEO 2011 Projections")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")+
+    ylim(4500,6500)
+
+etotal2015 = ggplot(totalE2015, aes(YearNum,MmtCO2e)) +
+    stat_smooth(se= FALSE) +
+    geom_point()+
+    ggtitle("Total Emmisions Per Year: AEO 2015 Projections")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")+
+    ylim(4500,6500)
+
+etotal2020 = ggplot(totalE2020,aes(NumYear,MmtCO2e))+
+    stat_smooth(se = FALSE)+
+    geom_point()+
+    ggtitle("Total Emmisions Per Year: AEO 2020 Projections")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")+
+    ylim(4500,6500)
+
+etotal2011+etotal2015+etotal2020
+
+```
+
+##### Which source is the greatest contributer per year? How many million metric tons of CO2e are output by the greatest contributer only?
+
+```{r}
+
+etop2011 = ggplot(sourcetopn_2011, aes(Year, MmtCO2e, fill = Source))+
+    geom_col()+
+    ggtitle("Fuel Source that is the Greatest Emmision Contributr By Year: AEO 2011 Projections")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")+
+    ylim(0,2500)
+
+etop2015 = ggplot(sourcetopn2015, aes(YearNum, MmtCO2e, fill = Source))+
+    geom_col()+
+    ggtitle("Fuel Source that is the Greatest Emmision Contributr By Year: AEO 2015 Projections")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")+
+    ylim(0,2500)
+
+etop2020 = ggplot(sourcetopn2020, aes(NumYear, MmtCO2e, fill = Source))+
+    geom_col()+
+    ggtitle("Fuel Source that is the Greatest Emmision Contributr By Year: AEO 2020 Projections")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")+
+    ylim(0,2500)
+
+plot_grid(etop2011,etop2015,etop2020, nrow = 3)
+
 ```
 
 #### 2.Which sector produces the most emissions? Does this vary by year?
 
 ```{r}
-sectormostyear = E2020B %>% 
-    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
-    group_by(NumYear, Sector) %>% 
+sectormost2011 = E2011A %>% 
+ filter(Source != "Total" & Sector != "TotalbyFuel") %>% 
+    group_by(Year, Sector) %>% 
     top_n(MmtCO2e, n = 1)
-
-sectormost = E2020B %>% 
-     filter(Source != "Total" & Sector != "Total by Fuel", NumYear == 2019) %>% 
-    group_by(Sector) %>% 
-    top_n(MmtCO2e, n = 1) %>% 
-    select(Sector, Source, MmtCO2e)
-sectormost
     
-ggplot(sectormostyear, aes(NumYear,MmtCO2e, color = Sector))+
-    geom_point()+
-    ggtitle("Total Emmisions Per Year: AEO 2020 Projections By Sector")+
-    ylab("Emissions(MmtCO2e)")+
-    xlab("Year")
-    
-```
-
-```{r}
 sectormost2015 = E2015A %>% 
     filter(Source != "Total" & Sector != "Total by Fuel") %>%
     filter(Sector != "Carbon Dioxide Emissions") %>%
     group_by(YearNum, Sector) %>% 
     top_n(MmtCO2e, n = 1)
-    
-ggplot(sectormost2015, aes(YearNum,MmtCO2e, color = Sector))+
-    geom_point()
+sectormost2020 = E2020B %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
+    group_by(NumYear, Sector) %>% 
+    top_n(MmtCO2e, n = 1)
 ```
 
+##### Which Sector Produces the Most Emissions?
 ```{r}
-max_sector_2011 = E2011A %>% 
-    filter(!str_detect(Sector,"Total by Fuel")) %>% 
-    filter(!str_detect(Source, "Total"))%>%
-    group_by(Year, Sector) %>% 
-    top_n(MmtCO2e, n = 1)
-    
-ggplot(max_sector_2011, aes(Year,MmtCO2e, color = Sector))+
-    geom_point()
-    
+sectormost2011 = E2011A %>% 
+     filter(Source != "Total" & Sector != "TotalbyFuel", Year == 2009) %>% 
+    group_by(Sector) %>% 
+    slice_max(order_by = MmtCO2e, n = 1) %>% 
+    select(Sector, MmtCO2e) %>% 
+    arrange(desc(MmtCO2e))
+sectormost2011
+
+sectormost2015 = E2015A %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel", Year == 2013 & Sector != "Carbon Dioxide Emissions") %>% 
+    group_by(Sector) %>% 
+    top_n(MmtCO2e, n = 1) %>% 
+    select(Sector, MmtCO2e) %>% 
+    arrange(desc(MmtCO2e))
+sectormost2015
+
+sectormost2020 = E2020B %>% 
+     filter(Source != "Total" & Sector != "Total by Fuel", Year == 2019) %>% 
+    group_by(Sector) %>% 
+    top_n(MmtCO2e, n = 1) %>% 
+    select(Sector,MmtCO2e) %>% 
+    arrange(desc(MmtCO2e))
+sectormost2020   
+
+ggplot(sectormost2011, aes(x = Sector,y = MmtCO2e,fill = Sector))+
+    geom_col()
+ggplot(sectormost2015, aes(x = Sector,y = MmtCO2e,fill = Sector))+
+    geom_col()
+ggplot(sectormost2020, aes(x = Sector,y = MmtCO2e,fill = Sector))+
+    geom_col()
+
 ```
+
+##### Variance By Year
+```{r}
+sector2011 = ggplot(max_sector_2011, aes(Year,MmtCO2e, color = Sector))+
+    geom_point()+
+    ggtitle("Total Emmisions Per Year: AEO 2020 Projections By Sector")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")
+sector2015 = ggplot(sectormost2015, aes(YearNum,MmtCO2e, color = Sector))+
+geom_point()+
+    ggtitle("Total Emmisions Per Year: AEO 2020 Projections By Sector")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")
+sector2020 =  ggplot(sectormostyear, aes(NumYear,MmtCO2e, color = Sector))+
+    geom_point()+
+    ggtitle("Total Emmisions Per Year: AEO 2020 Projections By Sector")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")
+
+plot_grid(sector2011,sector2020, nrow = 1)
+```
+
+*I stoped editing for final draft here* 
+
 
 #### 3.Looking at total emissions by fuel source? Which is the greatest contributor? Which has the greatest projected consumption?
+##### 2011 DATA
+
+```{r}
+total_source_2011 <- E2011A %>%
+    filter(!str_detect(Source, "Total"))%>%
+    group_by(Source)%>%
+    summarize(total_emission = sum(MmtCO2e)) %>%
+    arrange(desc(total_emission))
+total_source_2011
+source_2011 <- E2011A %>%
+    filter(!str_detect(Source, "Total"))%>%
+    filter(Year == "2011") %>%
+    group_by(Source)%>%
+    summarize(total_emission = sum(MmtCO2e)) %>%
+    arrange(desc(total_emission))
+source_2011
+ggplot(total_source_2011, aes(x= Source, y = total_emission))+
+    geom_col()
+ggplot(source_2011, aes(x= Source, y = total_emission))+
+    geom_col()
+```
+
+##### 2015 DATA
+
+```{r}
+BySourceTotal2015 = E2015A %>% 
+    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total")
+BySourceTotal2014 = E2015A %>% 
+    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total" & YearNum == 2014)
+ggplot(BySourceTotal2014, aes(Source,MmtCO2e, fill = Source))+
+    geom_col() +
+    ggtitle("Total Emmisions By Fuel Source: 2014")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Fuel Source")
+ggplot(BySourceTotal2015, aes(YearNum, MmtCO2e, color = Source))+
+    geom_line()+
+    geom_smooth(se = FALSE, method = "lm") +
+    ggtitle("Total Emmisions Per Fuel Source: AEO 2015 Projections") +
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")
+```
+
+##### 2020 DATA
+
 ```{r}
 BySourceTotal = E2020B %>% 
     filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total")
@@ -262,51 +365,49 @@ ggplot(BySourceTotal, aes(NumYear, MmtCO2e, color = Source))+
     
 ```
 
-```{r}
-BySourceTotal2015 = E2015A %>% 
-    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total")
-
-BySourceTotal2014 = E2015A %>% 
-    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total" & YearNum == 2014)
-
-ggplot(BySourceTotal2014, aes(Source,MmtCO2e, fill = Source))+
-    geom_col() +
-    ggtitle("Total Emmisions By Fuel Source: 2014")+
-    ylab("Emissions(MmtCO2e)")+
-    xlab("Fuel Source")
-
-ggplot(BySourceTotal2015, aes(YearNum, MmtCO2e, color = Source))+
-    geom_line()+
-    geom_smooth(se = FALSE, method = "lm") +
-    ggtitle("Total Emmisions Per Fuel Source: AEO 2015 Projections") +
-    ylab("Emissions(MmtCO2e)")+
-    xlab("Year")
-```
-
-```{r}
-total_source_2011 <- E2011A %>%
-    filter(!str_detect(Source, "Total"))%>%
-    group_by(Source)%>%
-    summarize(total_emission = sum(MmtCO2e)) %>%
-    arrange(desc(total_emission))
-total_source_2011
-
-source_2011 <- E2011A %>%
-    filter(!str_detect(Source, "Total"))%>%
-    filter(Year == "2011") %>%
-    group_by(Source)%>%
-    summarize(total_emission = sum(MmtCO2e)) %>%
-    arrange(desc(total_emission))
-source_2011
-
-ggplot(total_source_2011, aes(x= Source, y = total_emission))+
-    geom_col()
-ggplot(source_2011, aes(x= Source, y = total_emission))+
-    geom_col()
-
-```
-
 #### 4. Which sector uses the most renewables? Which uses the most non-renewables?
+
+
+
+##### 2011 DATA
+
+```{r}
+
+C2011Renew = C2011 %>%
+    filter(Year == "2011")%>%
+    filter(!str_detect(Source, "Total"))%>%
+    mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable",
+    Source != "Renewable Energy" ~ "Non-Renewable")) %>%
+    filter(Sector != "Energy Use & Related Statistics" & Sector != "Unspecified Sector") %>% 
+    group_by(Sector, RenewableResource) %>% 
+    drop_na() %>% 
+    summarise(energysum = sum(quads)) %>% 
+    arrange(desc(energysum))
+ggplot(C2011Renew, aes(RenewableResource, energysum, fill = Sector))+
+    geom_col(position = "dodge")
+```
+
+##### 2015 DATA
+
+```{r}
+C2015Renew = C2015A %>%
+    slice(1:3770) %>%
+    mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable",
+    Source != "Renewable Energy" ~ "Non-Renewable")) %>%
+    filter(Sector != "Energy Use & Related Statistics" & Sector != "Unspecified Sector") %>% 
+    group_by(Sector, RenewableResource) %>% 
+    drop_na() %>% 
+    summarise(energysum = sum(quads)) %>% 
+    arrange(desc(energysum))
+ggplot(C2015Renew, aes(RenewableResource, energysum, fill = Sector))+
+    geom_col(position = "dodge") +
+    ggtitle("Which Sector Uses the Most Renewables?",
+            subtitle = "Based on 2015 Data")+
+    ylab("Energy Consumption per Sector(quads)")+
+    xlab("Renewable")
+```
+
+##### 2020 DATA
 
 ```{r}
 
@@ -327,47 +428,42 @@ geom_col(position = "dodge")+
 
 ```
 
-```{r}
-C2015Renew = C2015A %>%
-    slice(1:3770) %>%
-    mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable",
-    Source != "Renewable Energy" ~ "Non-Renewable")) %>%
-    filter(Sector != "Energy Use & Related Statistics" & Sector != "Unspecified Sector") %>% 
-    group_by(Sector, RenewableResource) %>% 
-    drop_na() %>% 
-    summarise(energysum = sum(quads)) %>% 
-    arrange(desc(energysum))
+#### 5.Which energy source is utilized the most in each sector?
+##### 2011 DATA
 
-ggplot(C2015Renew, aes(RenewableResource, energysum, fill = Sector))+
-    geom_col(position = "dodge") +
-    ggtitle("Which Sector Uses the Most Renewables?",
+```{r}
+sector_most_2011 <- C2011 %>%
+    filter(!str_detect(Source, "Total")) %>%
+    filter(Year == "2011") %>% 
+    filter(Sector != "Energy Use & Related Statistics" & Sector != "NA") %>% 
+    group_by(Sector) %>%
+    slice_max(order_by = quads, n = 1) 
+ggplot(sector_most_2011, aes(Sector, quads, fill = Source))+
+geom_col()
+```
+
+##### 2015 DATA
+
+```{r}
+sectormostconsume2015 = C2015B %>%
+    slice(1:3770) %>%
+    filter(Source != "Total" & Year == 2015) %>% 
+    filter(Sector != "Energy Use & Related Statistics" & Sector != "NA") %>% 
+    group_by(Sector) %>%
+    slice_max(order_by = quads, n = 1)
+ggplot(sectormostconsume2015, aes(Sector, quads, fill = Source))+
+    geom_col() +
+    ggtitle("Which Fuel Source is Utilized Most in Each Sector?",
             subtitle = "Based on 2015 Data")+
     ylab("Energy Consumption per Sector(quads)")+
-    xlab("Renewable")
+    xlab("Sector")
 ```
 
-```{r}
+##### 2020 DATA
 
-C2011Renew = C2011A %>%
-    filter(Year == "2011")%>%
-    filter(!str_detect(Source, "Total"))%>%
-    mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable",
-    Source != "Renewable Energy" ~ "Non-Renewable")) %>%
-    filter(Sector != "Energy Use & Related Statistics" & Sector != "Unspecified Sector") %>% 
-    group_by(Sector, RenewableResource) %>% 
-    drop_na() %>% 
-    summarise(energysum = sum(quads)) %>% 
-    arrange(desc(energysum))
-
-ggplot(C2011Renew, aes(RenewableResource, energysum, fill = Sector))+
-    geom_col(position = "dodge")
-
-```
-
-#### 5.Which energy source is utilized the most in each sector?
 ```{r}
 sectormostconsume = C2020B %>%
-    filter(Source != "Total" & YearN == 2019) %>% 
+    filter(Source != "Total" & Year == 2019) %>% 
     filter(Sector != "Energy Use & Related Statistics" & Sector != "NA") %>% 
     group_by(Sector) %>%
     slice_max(order_by = quads, n = 1)
@@ -379,60 +475,12 @@ ggtitle("Which Fuel Source is Utilized Most in Each Sector?")+
     xlab("Sector")
 ```
 
-```{r}
-sectormostconsume2015 = C2015B %>%
-    slice(1:3770) %>%
-    filter(Source != "Total" & NumericYear == 2019) %>% 
-    filter(Sector != "Energy Use & Related Statistics" & Sector != "NA") %>% 
-    group_by(Sector) %>%
-    slice_max(order_by = quads, n = 1)
-
-ggplot(sectormostconsume2015, aes(Sector, quads, fill = Source))+
-    geom_col() +
-    ggtitle("Which Fuel Source is Utilized Most in Each Sector?",
-            subtitle = "Based on 2015 Data")+
-    ylab("Energy Consumption per Sector(quads)")+
-    xlab("Sector")
-```
-
-```{r}
-sector_most_2011 <- C2011A %>%
-    filter(!str_detect(Source, "Total")) %>%
-    filter(Year == "2011") %>% 
-    filter(Sector != "Energy Use & Related Statistics" & Sector != "NA") %>% 
-    group_by(Sector) %>%
-    slice_max(order_by = quads, n = 1) 
-ggplot(sector_most_2011, aes(Sector, quads, fill = Source))+
-geom_col()
-```
-
 #### 6. Which sector has the highest growth rate for each fuel source?
-```{r}
 
-ratesector = C2020B %>%
-    filter(YearN == 2019 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
-    group_by(Sector, YearN) %>% 
-    slice_max(order_by = RateNumeric, n = 1) %>% 
-    arrange(desc(RateNumeric)) %>% 
-    select(Sector,Source,`Growth (2019-2050)`)
-ratesector
-
-```
+##### 2011 DATA
 
 ```{r}
-ratesector2015 = C2015B %>%
-    slice(1:3770) %>%
-    filter(NumericYear == 2014 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
-    group_by(Sector, NumericYear) %>% 
-    slice_max(order_by = RateNumeric, n = 1) %>% 
-    arrange(desc(RateNumeric)) %>%
-    select(Sector, Source, 'Growth (2013-2040)')
-
-ratesector2015
-```
-
-```{r}
-by_rate_2011 <- C2011A%>%
+by_rate_2011 <- C2011%>%
     filter(Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
     drop_na()%>%
     mutate(Growth_Rate_Percentage = C2011A$`Growth Rate (2009-2035)`)%>%
@@ -445,14 +493,46 @@ ggplot(by_rate_2011, aes(Sector, Growth_Rate_Percentage, fill = Source))+
     geom_col(position = "dodge")
 ```
 
-#### 7. Which energy source has the highest growth rate over all? 
+##### 2015 DATA
+
 ```{r}
-ratesource = C2020B %>%
-    filter(YearN == 2019 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
-    slice_max(order_by = RateNumeric, n = 1) %>%
-    select(Source,Sector,`Growth (2019-2050)`)
-ratesource
+ratesector2015 = C2015B %>%
+    slice(1:3770) %>%
+    filter(NumericYear == 2014 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
+    group_by(Sector, NumericYear) %>% 
+    slice_max(order_by = RateNumeric, n = 1) %>% 
+    arrange(desc(RateNumeric)) %>%
+    select(Sector, Source, 'Growth (2013-2040)')
+ratesector2015
 ```
+
+##### 2020 DATA
+
+```{r}
+
+ratesector = C2020B %>%
+    filter(YearN == 2019 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
+    group_by(Sector, YearN) %>% 
+    slice_max(order_by = RateNumeric, n = 1) %>% 
+    arrange(desc(RateNumeric)) %>% 
+    select(Sector,Source,`Growth (2019-2050)`)
+ratesector
+
+```
+
+#### 7. Which energy source has the highest growth rate over all? 
+
+##### 2011 DATA
+
+```{r}
+most_growth_2011 = by_rate_2011 %>%
+    filter(Year == "2011" & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
+    select(Source,Sector,Growth_Rate_Percentage)%>%
+    arrange(desc(Growth_Rate_Percentage))
+most_growth_2011
+```
+
+##### 2015 DATA
 
 ```{r}
 ratesource = C2015B %>%
@@ -463,28 +543,19 @@ ratesource = C2015B %>%
     select(Source,Sector,"Growth (2013-2040)")
 ```
 
-```{r}
-most_growth_2011 = by_rate_2011 %>%
-    filter(Year == "2011" & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
-    select(Source,Sector,Growth_Rate_Percentage)%>%
-    arrange(desc(Growth_Rate_Percentage))
-most_growth_2011
+##### 2020 DATA
 
+```{r}
+ratesource = C2020B %>%
+    filter(YearN == 2019 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
+    slice_max(order_by = RateNumeric, n = 1) %>%
+    select(Source,Sector,`Growth (2019-2050)`)
+ratesource
 ```
 
 #### 8. How does energy consumption vary by year?
-```{r}
-ConsumptionByYear = C2020B %>% 
-    filter(Source =="Total") %>% 
-    group_by(YearN) %>% 
-    summarise(sumquads = sum(quads))
 
-ggplot(ConsumptionByYear, aes(YearN, sumquads))+
-    geom_line(color  = "red", size = 2)+
-    ggtitle("Which Total Fuel Consumtion Vary by Year?")+
-    ylab("Energy Consumption(quads)")+
-    xlab("Year")
-```
+##### 2015 DATA
 
 ```{r}
 ConsumptionByYear2015 = C2015B %>% 
@@ -498,10 +569,12 @@ ggplot(ConsumptionByYear2015, aes(NumericYear, sumquads))+
             subtitle = "Based on 2015 Data") +
     ylab("Energy Consumption(quads)") +
     xlab("Year")
-````
+```
+
+##### 2011 DATA
 
 ```{r}
-ConsumptionByYear_2011 = by_rate %>% 
+ConsumptionByYear_2011 = by_rate_2011 %>% 
     filter(!str_detect(Source, "Total")) %>% 
     group_by(Year) %>% 
     summarise(sumquads = sum(quads))
@@ -509,39 +582,58 @@ ggplot(ConsumptionByYear_2011, aes(as.numeric(Year), sumquads))+
     geom_line()
 ```
 
-#### 9.Compare projections in 2010, 2014 to actual measures in 2019. Compare slope and intercept of the trend lines.
+##### 2020 DATA
+
+```{r}
+ConsumptionByYear2020 = C2020B %>% 
+    filter(Source =="Total") %>% 
+    group_by(YearN) %>% 
+    summarise(sumquads = sum(quads))
+
+ggplot(ConsumptionByYear2020, aes(YearN, sumquads))+
+    geom_line(color  = "red", size = 2)+
+    ggtitle("Which Total Fuel Consumtion Vary by Year?")+
+    ylab("Energy Consumption(quads)")+
+    xlab("Year")
+```
+
+#### 9.Compare projections in 2010 to actual measures in 2019. Compare slope and intercept of the trend lines.
+
 ```{r}
 Actual2019 = C2020B %>% 
-    filter(Year == "2019" & Source == "Total") 
-ggplot(Actual2019, aes(Sector, quads, fill = Sector, alpha = 0.5))+
+    filter(Year == "2019" & Source == "Total" & Sector != "Unspecified Sector") 
+
+Prediction2015 = C2015B %>% 
+    filter(Year == "2019" & Source == "Total" & Sector != "Unspecified Sector" & Sector != "Total Energy Consumption")
+
+Prediction2011 = C2011 %>% 
+    filter(Year == "2019" & Source == "Total" & Sector != "Total Energy Consumption")
+
+ggplot(Actual2019, aes(Sector, quads, fill = Sector))+
     geom_col()
+
+ggplot(Prediction2011, aes(Sector, quads, fill = Sector))+
+geom_col()
+    
+ggplot(Prediction2015, aes(Sector, quads, fill = Sector))+    
+geom_col()
+
 ```
-```{r}
-projection_2011 = C2011A %>% 
-    filter(str_detect(Source, "Total"))%>%
-    filter(str_detect(Year, "2011"))
-ggplot(projection_2011, aes(Sector, quads, fill = Sector))+
-    geom_col()
-```
+
 ```{r}
 ConsumptionByYear2015 <- ConsumptionByYear2015 %>%
     mutate(Dataset = "2015")
-
 ConsumptionByYear2020 <- ConsumptionByYear2020 %>%
     mutate(Dataset = "2020")
-
 consumptions_2015_2020_combined <- bind_rows(ConsumptionByYear2015, ConsumptionByYear2020)
-
 sourcetopn2015 <- sourcetopn2015 %>%
     mutate(Dataset = "2015")
-
 sourcetopn2020 <- sourcetopn2020 %>%
     mutate(Dataset = "2020")
-
 emission_2015_2020_combined <- bind_rows(sourcetopn2015, sourcetopn2020)
 
 ggplot(consumptions_2015_2020_combined, aes(NumericYear, sumquads, color = Dataset)) +
-    geom_line()
+geom_point()
     
 ggplot(emission_2015_2020_combined, aes(YearNum, MmtCO2e, color = Dataset)) +
     geom_point()
@@ -549,21 +641,20 @@ ggplot(emission_2015_2020_combined, aes(YearNum, MmtCO2e, color = Dataset)) +
 
 ### Discussion
 
-#### Provide broader interpretations of your analysis and describe how to interpret your results with respect to your questions of interest.
+Param:
+Broadly speaking, based on the 2015 and 2020 datasets, it is certain that emissions have dropped. However, it is also evident that consumption will either mostly stay steady or rise slowly. Projections for consumption skyrocket in each dataset regardless of year, so it does appear the AEO is taking the pessimistic outlook for their projections. 
+
+The datasets for 2015 energy outlook seems to be slightly inconsistent with format and depth of projections with other datasets. This is not too much of a shortcoming, but as analysts, it does leave us guessing for the verification of some of the prior projections in later datasets within a single dataset. Additionally, the outlook is made during the fiscal year that the outlook is released, so only the previous few years will be accurate. This requires more data to be obtained, which in turn requires more standardization between the format of each dataset. Perhaps, given the previous years data-sets and actual values, a match between the mesh of datas that are equal could come handy. And to test performance even further, a whole parity chart could be made between different datasets actual performance and projected performance.
+
+Further analysis can be made on specific governmental body's policy performance, specifically around the time period they are made in tandem to the associated energy outlook data sets. Similarly, new data can be collected regarding this.
+
+Conclusively, it appears Americans are doing a very good job on curbing emissions when considering the 2015 and 2020 dataset. Consumption is still there, but it is highly unlikely an increasing population will decrease their consumption of energy unless several billions of technology's source of energy is changed to a more modern source, this also requiring a change in the technology itself.
+
+Yunqing:
 - for data in 2011 delivered energy consumptions contribute the most among all sectors of energy and coal is the most commonly used source of energy followed by electricity and petroleium. Transportation and electric power produces the most parts of the energy.And a huge portion of the energy is used for US GDP. Through these comparision, it will be interesting to look at how it changed trhoughout the decade.
-#### Discuss any potential short-comings of the analysis.
 - one of the potential short-comings of this analysis will be the sized of our datasets are slightly different which might caused a little inaccuracy in final analysis
-#### Discuss potential future directions for additional work
 - we can look more deeply into how different variables changes throughout the decades and discuss the potential caused and effect of the changes such as how the a environmental related policy or crisis impacted the energy use or how some major changes in economy or manufacturing market affect the use of energy
-#### New questions
  - my new questions is can we use some of the statistc model to predict the future changes based on previous year's dataset which we can later use to compare with the actual situation and talk about why there are potential difference between prediction and the reality
-#### Different methods to address the same questions
  - Instead of comparing all sectors and sources, I will like to look closely at a specific source and sector and study it more in-depth
-#### New data you might collect to refine your understanding
 - I will like to look at some data that related to the variable which changed the most throughout the decade and study the reason behind the change
-#### Summarize your primary conclusions and the primary evidence that supports these conclusions.
 - In conclusion, based on the previous analysis, I would like to predict that the consumption of energy continue to increase in the next decade but other source of the energy will surpase the domination of energy use of coal becasue we can see the curve of electric power increasing with a higher slope the coal in 2011
-    
-    
-#### References
-        In the R Markdown file, you may automatically cite other resources by using a caret followed by the reference between square brackets: ^[your reference text] which will place a marker at this location and a footnote at the end of the document.
