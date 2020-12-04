@@ -170,7 +170,9 @@ etotal2011 = ggplot(total_2011,aes(Year,MmtCO2e))+
     ggtitle("Total Emmisions Per Year: AEO 2011 Projections")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Year")+
-    ylim(4500,6500)
+    ylim(4500,6500)+
+    geom_vline(xintercept = 2020,  color = "red")+
+    geom_hline(yintercept = 5777, color = "red")
 
 etotal2015 = ggplot(totalE2015, aes(YearNum,MmtCO2e)) +
     stat_smooth(se= FALSE) +
@@ -178,7 +180,9 @@ etotal2015 = ggplot(totalE2015, aes(YearNum,MmtCO2e)) +
     ggtitle("Total Emmisions Per Year: AEO 2015 Projections")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Year")+
-    ylim(4500,6500)
+    ylim(4500,6500)+
+    geom_vline(xintercept = 2020,  color = "red")+
+    geom_hline(yintercept = 5499.3, color = "red")
 
 etotal2020 = ggplot(totalE2020,aes(NumYear,MmtCO2e))+
     stat_smooth(se = FALSE)+
@@ -186,7 +190,9 @@ etotal2020 = ggplot(totalE2020,aes(NumYear,MmtCO2e))+
     ggtitle("Total Emmisions Per Year: AEO 2020 Projections")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Year")+
-    ylim(4500,6500)
+    ylim(4500,6500)+
+    geom_vline(xintercept = 2020,  color = "red")+
+    geom_hline(yintercept = 4993, color = "red")
 
 etotal2011+etotal2015+etotal2020
 
@@ -201,21 +207,26 @@ etop2011 = ggplot(sourcetopn_2011, aes(Year, MmtCO2e, fill = Source))+
     ggtitle("Fuel Source that is the Greatest Emmision Contributr By Year: AEO 2011 Projections")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Year")+
-    ylim(0,2500)
+    ylim(0,2500)+
+geom_vline(xintercept = 2020,  color = "black", size = 2)    
 
 etop2015 = ggplot(sourcetopn2015, aes(YearNum, MmtCO2e, fill = Source))+
     geom_col()+
     ggtitle("Fuel Source that is the Greatest Emmision Contributr By Year: AEO 2015 Projections")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Year")+
-    ylim(0,2500)
+    ylim(0,2500)+
+    geom_vline(xintercept = 2020,  color = "black", size = 2)
+    
+    
 
 etop2020 = ggplot(sourcetopn2020, aes(NumYear, MmtCO2e, fill = Source))+
     geom_col()+
     ggtitle("Fuel Source that is the Greatest Emmision Contributr By Year: AEO 2020 Projections")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Year")+
-    ylim(0,2500)
+    ylim(0,2500)+
+    geom_vline(xintercept = 2020,  color = "black", size = 2)
 
 plot_grid(etop2011,etop2015,etop2020, nrow = 3)
 
@@ -313,11 +324,10 @@ ggplot(sectormost2020A, aes(Year,MmtCO2e, color = Sector))+
 
 ```
 
-*I stoped editing for final draft here* 
 
 
-#### 3.Looking at total emissions by fuel source? Which is the greatest contributor? Which has the greatest projected consumption?
-##### 2011 DATA
+
+#### 3.Looking at total emissions by fuel source, which is the greatest contributor? Which fuel source has the greatest projected consumption?
 
 ```{r}
 total_source_2011 <- E2011A %>%
@@ -325,62 +335,57 @@ total_source_2011 <- E2011A %>%
     group_by(Source)%>%
     summarize(total_emission = sum(MmtCO2e)) %>%
     arrange(desc(total_emission))
-total_source_2011
-source_2011 <- E2011A %>%
-    filter(!str_detect(Source, "Total"))%>%
-    filter(Year == "2011") %>%
-    group_by(Source)%>%
-    summarize(total_emission = sum(MmtCO2e)) %>%
-    arrange(desc(total_emission))
-source_2011
-ggplot(total_source_2011, aes(x= Source, y = total_emission))+
-    geom_col()
-ggplot(source_2011, aes(x= Source, y = total_emission))+
-    geom_col()
+
+BySourceTotal2010 <- E2011A %>%
+    filter(Sector == "TotalbyFuel" & Source != "Total" & Year == 2010)
+
+ 
+
+BySourceTotal2015 = E2015A %>% 
+    filter(Sector == "Total by Fuel" & Source != "Total")
+
+BySourceTotal2014 = E2015A %>% 
+    filter(Sector == "Total by Fuel" & Source != "Total" & Year == 2014)
+
+BySourceTotal2020 = E2020B %>% 
+    filter(Sector == "Total by Fuel"  & Source != "Total" & Source != "Other")
+
+BySourceTotal2019 = E2020B %>% 
+    filter(Sector == "Total by Fuel"  & Source != "Total" & Year == 2019)
+
 ```
 
-##### 2015 DATA
-
+##### Which fuel source is the greatest contribuer to emmisions?
 ```{r}
-BySourceTotal2015 = E2015A %>% 
-    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total")
-BySourceTotal2014 = E2015A %>% 
-    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total" & YearNum == 2014)
-ggplot(BySourceTotal2014, aes(Source,MmtCO2e, fill = Source))+
+
+fuel2010 = ggplot(BySourceTotal2010, aes(x= Source, y = MmtCO2e, fill = Source))+
+    geom_col()+
+    ggtitle("Total Emmisions By Fuel Source: 2010")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Fuel Source")
+fuel2014 = ggplot(BySourceTotal2014, aes(Source,MmtCO2e, fill = Source))+
     geom_col() +
     ggtitle("Total Emmisions By Fuel Source: 2014")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Fuel Source")
-ggplot(BySourceTotal2015, aes(YearNum, MmtCO2e, color = Source))+
-    geom_line()+
-    geom_smooth(se = FALSE, method = "lm") +
-    ggtitle("Total Emmisions Per Fuel Source: AEO 2015 Projections") +
-    ylab("Emissions(MmtCO2e)")+
-    xlab("Year")
-```
 
-##### 2020 DATA
-
-```{r}
-BySourceTotal = E2020B %>% 
-    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total")
-
-BySourceTotal2019 = E2020B %>% 
-    filter(Sector == "Total by Fuel" & Source != "Other" & Source != "Total" & NumYear == 2019)
-
-ggplot(BySourceTotal2019, aes(Source,MmtCO2e, fill = Source))+
+fuel2019 = ggplot(BySourceTotal2019, aes(Source,MmtCO2e, fill = Source))+
     geom_col()+
     ggtitle("Total Emmisions By Fuel Source: 2019")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Fuel Source")
 
-ggplot(BySourceTotal, aes(NumYear, MmtCO2e, color = Source))+
-    geom_line()+
+fuel2010+fuel2014+fuel2019
+```
+
+##### Which fuel source has the greatest projected consumption?
+```{r}
+
+ggplot(BySourceTotal2020, aes(NumYear, MmtCO2e, color = Source))+
     geom_smooth(se = FALSE, method = "lm")+
     ggtitle("Total Emmisions Per Fuel Source: AEO 2020 Projections")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Year")
-    
 ```
 
 #### 4. Which sector uses the most renewables? Which uses the most non-renewables?
