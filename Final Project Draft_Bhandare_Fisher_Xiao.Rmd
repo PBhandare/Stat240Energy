@@ -12,6 +12,7 @@ library(ggplot2)
 library(lubridate)
 library(cowplot)
 library(patchwork)
+library(forcats)
 ```
 
 ## An Analysis of US Enenrgy Related Consumption and Emmisions Data
@@ -223,76 +224,93 @@ plot_grid(etop2011,etop2015,etop2020, nrow = 3)
 #### 2.Which sector produces the most emissions? Does this vary by year?
 
 ```{r}
-sectormost2011 = E2011A %>% 
+sectormost2011A = E2011A %>% 
  filter(Source != "Total" & Sector != "TotalbyFuel") %>% 
     group_by(Year, Sector) %>% 
     top_n(MmtCO2e, n = 1)
     
-sectormost2015 = E2015A %>% 
+sectormost2015A = E2015A %>% 
     filter(Source != "Total" & Sector != "Total by Fuel") %>%
     filter(Sector != "Carbon Dioxide Emissions") %>%
-    group_by(YearNum, Sector) %>% 
+    group_by(Year, Sector) %>% 
     top_n(MmtCO2e, n = 1)
-sectormost2020 = E2020B %>% 
+sectormost2020A = E2020B %>% 
     filter(Source != "Total" & Sector != "Total by Fuel") %>% 
-    group_by(NumYear, Sector) %>% 
+    group_by(Year, Sector) %>% 
     top_n(MmtCO2e, n = 1)
 ```
 
 ##### Which Sector Produces the Most Emissions?
 ```{r}
-sectormost2011 = E2011A %>% 
+sectormost2011B = E2011A %>% 
      filter(Source != "Total" & Sector != "TotalbyFuel", Year == 2009) %>% 
     group_by(Sector) %>% 
     slice_max(order_by = MmtCO2e, n = 1) %>% 
-    select(Sector, MmtCO2e) %>% 
-    arrange(desc(MmtCO2e))
-sectormost2011
+    arrange(desc(MmtCO2e)) %>% 
+select(Sector, MmtCO2e)
+sectormost2011B
 
-sectormost2015 = E2015A %>% 
+sectormost2015B = E2015A %>% 
     filter(Source != "Total" & Sector != "Total by Fuel", Year == 2013 & Sector != "Carbon Dioxide Emissions") %>% 
     group_by(Sector) %>% 
-    top_n(MmtCO2e, n = 1) %>% 
-    select(Sector, MmtCO2e) %>% 
-    arrange(desc(MmtCO2e))
-sectormost2015
+    top_n(MmtCO2e, n = 1) %>%
+        arrange(desc(MmtCO2e)) %>% 
+    select(Sector, MmtCO2e) 
+sectormost2015B
 
-sectormost2020 = E2020B %>% 
+sectormost2020B = E2020B %>% 
      filter(Source != "Total" & Sector != "Total by Fuel", Year == 2019) %>% 
     group_by(Sector) %>% 
-    top_n(MmtCO2e, n = 1) %>% 
-    select(Sector,MmtCO2e) %>% 
-    arrange(desc(MmtCO2e))
-sectormost2020   
+    top_n(MmtCO2e, n = 1) %>%
+        arrange(desc(MmtCO2e)) %>% 
+    select(Sector,MmtCO2e)  
+sectormost2020B   
 
-ggplot(sectormost2011, aes(x = Sector,y = MmtCO2e,fill = Sector))+
-    geom_col()
-ggplot(sectormost2015, aes(x = Sector,y = MmtCO2e,fill = Sector))+
-    geom_col()
-ggplot(sectormost2020, aes(x = Sector,y = MmtCO2e,fill = Sector))+
-    geom_col()
+SM2011B = ggplot(sectormost2011B, aes(x = Sector,y = MmtCO2e,fill = Sector))+
+    geom_col()+
+    ylim(c(0,2200))
+SM2015B = ggplot(sectormost2015B, aes(x = Sector,y = MmtCO2e,fill = Sector))+
+    geom_col()+
+    ylim(c(0,2200))
+SM2020B = ggplot(sectormost2020B, aes(x = Sector,y = MmtCO2e,fill = Sector))+
+    geom_col()+
+    ylim(c(0,2200))
 
+SM2011B+SM2015B+SM2020B
 ```
 
 ##### Variance By Year
 ```{r}
-sector2011 = ggplot(max_sector_2011, aes(Year,MmtCO2e, color = Sector))+
-    geom_point()+
-    ggtitle("Total Emmisions Per Year: AEO 2020 Projections By Sector")+
-    ylab("Emissions(MmtCO2e)")+
-    xlab("Year")
-sector2015 = ggplot(sectormost2015, aes(YearNum,MmtCO2e, color = Sector))+
-geom_point()+
-    ggtitle("Total Emmisions Per Year: AEO 2020 Projections By Sector")+
-    ylab("Emissions(MmtCO2e)")+
-    xlab("Year")
-sector2020 =  ggplot(sectormostyear, aes(NumYear,MmtCO2e, color = Sector))+
-    geom_point()+
-    ggtitle("Total Emmisions Per Year: AEO 2020 Projections By Sector")+
-    ylab("Emissions(MmtCO2e)")+
-    xlab("Year")
 
-plot_grid(sector2011,sector2020, nrow = 1)
+ggplot(sectormost2011A, aes(Year,MmtCO2e, color = Sector))+
+    geom_point()+
+    ggtitle("Total Emmisions Per Year By Sector: AEO 2011 ")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")+
+    geom_hline(yintercept = 1500, linetype = "dashed", color = "red")+
+    scale_x_discrete(breaks = c(2010,2020,2030,2040,2050))+
+    ylim(c(500,3000))
+
+
+ggplot(sectormost2015A, aes(Year,MmtCO2e, color = Sector))+
+geom_point()+
+ggtitle("Total Emmisions Per Year By Sector: AEO 2015")+
+ylab("Emissions(MmtCO2e)")+
+xlab("Year")+
+geom_hline(yintercept = 1500, linetype = "dashed", color = "red")+
+scale_x_discrete(breaks = c(2010,2020,2030,2040,2050))+
+    ylim(c(500,3000))
+    
+ggplot(sectormost2020A, aes(Year,MmtCO2e, color = Sector))+
+    geom_point()+
+    ggtitle("Total Emmisions Per Year By Sector: AEO 2020 ")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Year")+
+    geom_hline(yintercept = 1500, linetype = "dashed", color = "red")+
+    scale_x_discrete(breaks = c(2010,2020,2030,2040,2050))+
+    ylim(c(500,3000))
+
+
 ```
 
 *I stoped editing for final draft here* 
