@@ -527,47 +527,52 @@ ggplot(ratesector, aes(Sector, GrowthRate, fill= Source) ) +
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 #### 7. Which energy source has the highest growth rate over all? 
-
-##### 2011 DATA
-
-```{r}
-most_growth_2011 = by_rate_2011 %>%
+```
+ratesource2011 = C2011B %>%
     filter(Year == "2011" & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
     select(Source,Sector,Growth_Rate_Percentage)%>%
     arrange(desc(Growth_Rate_Percentage))
-most_growth_2011
-```
 
-##### 2015 DATA
-
-```{r}
-ratesource = C2015B %>%
+ratesource2015 = C2015B %>%
     filter(NumericYear == 2014 & Sector != "NA" & 
                Sector != "Unspecified Sector" & 
                Sector != "Energy Use & Related Statistics") %>% 
     slice_max(order_by = RateNumeric, n = 1) %>%
     select(Source,Sector,"Growth (2013-2040)")
-```
 
-##### 2020 DATA
-
-```{r}
-ratesource = C2020B %>%
+ratesource2020 = C2020B %>%
     filter(YearN == 2019 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
     slice_max(order_by = RateNumeric, n = 1) %>%
     select(Source,Sector,`Growth (2019-2050)`)
-ratesource
+
+ratesource2011
+ratesource2015
+ratesource2020
 ```
 
 #### 8. How does energy consumption vary by year?
-
-##### 2015 DATA
-
 ```{r}
+ConsumptionByYear_2011 = by_rate_2011 %>% 
+    filter(!str_detect(Source, "Total")) %>% 
+    group_by(NumericYear) %>% 
+    summarise(sumquads = sum(quads))
+    
 ConsumptionByYear2015 = C2015B %>% 
     filter(Source =="Total") %>% 
     group_by(NumericYear) %>% 
     summarise(sumquads = sum(quads))
+    
+ConsumptionByYear2020 = C2020B %>% 
+    filter(Source =="Total") %>% 
+    group_by(NumericYear) %>% 
+    summarise(sumquads = sum(quads))
+    
+ggplot(ConsumptionByYear_2011, aes(as.numeric(Year), sumquads))+
+    geom_line() +
+    ggtitle("Which Total Fuel Consumtion Vary by Year?", 
+            subtitle = "Based on 2011 Data") +
+    ylab("Energy Consumption(quads)") +
+    xlab("Year")
 
 ggplot(ConsumptionByYear2015, aes(NumericYear, sumquads))+
     geom_line() +
@@ -575,31 +580,12 @@ ggplot(ConsumptionByYear2015, aes(NumericYear, sumquads))+
             subtitle = "Based on 2015 Data") +
     ylab("Energy Consumption(quads)") +
     xlab("Year")
-```
-
-##### 2011 DATA
-
-```{r}
-ConsumptionByYear_2011 = by_rate_2011 %>% 
-    filter(!str_detect(Source, "Total")) %>% 
-    group_by(Year) %>% 
-    summarise(sumquads = sum(quads))
-ggplot(ConsumptionByYear_2011, aes(as.numeric(Year), sumquads))+
-    geom_line()
-```
-
-##### 2020 DATA
-
-```{r}
-ConsumptionByYear2020 = C2020B %>% 
-    filter(Source =="Total") %>% 
-    group_by(YearN) %>% 
-    summarise(sumquads = sum(quads))
 
 ggplot(ConsumptionByYear2020, aes(YearN, sumquads))+
-    geom_line(color  = "red", size = 2)+
-    ggtitle("Which Total Fuel Consumtion Vary by Year?")+
-    ylab("Energy Consumption(quads)")+
+    geom_line(color  = "red", size = 2) +
+    ggtitle("Which Total Fuel Consumtion Vary by Year?", 
+            subtitle = "Based on 2020 Data") +
+    ylab("Energy Consumption(quads)") +
     xlab("Year")
 ```
 
