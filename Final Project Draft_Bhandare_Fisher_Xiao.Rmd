@@ -769,12 +769,7 @@ pt(-abs(tstat_c), dof_c) + pt(abs(tstat_c), dof_c, lower.tail=FALSE)
 ```
  - The p value is 4.151938e-51 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of Coal in electric power is different from 2010-2020 period to 2020-2030 period. As renewable and other more efficient energy source being used, from the graph in previous question, we can seethe use of coal decline in electric power which contributing much lesser in energy emission. This is a good news because the coal-fired power plants release more greenhouse gases per unit of energy produced than any other electricity source (according to https://www.greenamerica.org/fight-dirty-energy/amazon-build-cleaner-cloud/coal-why-it-dirty).
 
-
-
-### Discussion
-
-Param:
-Broadly speak#### Test the hypothesis that the mean energy use from Petroleum in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
+#### Test the hypothesis that the mean energy use from Petroleum in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
 
 $$
 H_0: P_a = P_b
@@ -796,7 +791,12 @@ mean_diff_p <- mean(x1_p) - mean(x2_p)
 dof_p <- 15.664 ## from t.test() above
 se_p <- sqrt(sd(x1_p)^2/length(x1_p) + sd(x2_p)^2/length(x2_p))
 ci_5_p <- mean_diff_p + c(-1,1)*qt(0.975,dof_p)*se_p
-```ing, based on the 2015 and 2020 datasets, it is certain that emissions have dropped. However, it is also evident that consumption will either mostly stay steady or rise slowly. Projections for consumption skyrocket in each dataset regardless of year, so it does appear the AEO is taking the pessimistic outlook for their projections. 
+```
+
+### Discussion
+
+Param:
+Broadly speaking, based on the 2015 and 2020 datasets, it is certain that emissions have dropped. However, it is also evident that consumption will either mostly stay steady or rise slowly. Projections for consumption skyrocket in each dataset regardless of year, so it does appear the AEO is taking the pessimistic outlook for their projections. 
 
 The datasets for 2015 energy outlook seems to be slightly inconsistent with format and depth of projections with other datasets. This is not too much of a shortcoming, but as analysts, it does leave us guessing for the verification of some of the prior projections in later datasets within a single dataset. Additionally, the outlook is made during the fiscal year that the outlook is released, so only the previous few years will be accurate. This requires more data to be obtained, which in turn requires more standardization between the format of each dataset. Perhaps, given the previous years data-sets and actual values, a match between the mesh of datas that are equal could come handy. And to test performance even further, a whole parity chart could be made between different datasets actual performance and projected performance.
 
