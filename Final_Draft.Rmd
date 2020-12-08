@@ -7,6 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 library(tidyverse)
 library(ggplot2)
 library(lubridate)
@@ -693,31 +694,56 @@ lm2020 = E2020B %>%
    filter(Year == 2020 | Year == 2021 | Year == 2022 | Year == 2023 | Year == 2024 | Year == 2025 | Year == 2026 | Year == 2027 | Year == 2028 | Year == 2029| Year == 2030) %>% 
 filter(Source == "Total" & Sector == "Total by Fuel") %>% 
   select(Year, MmtCO2e)
-
-
-lm2011A = ggplot(lm2011, aes(Year,MmtCO2e))+
-  geom_smooth(method = "lm", se = FALSE)+
-  ggtitle("Linear Model For the Decade 2020-2030",
-          subtitle = "2011 Projections")+
-  scale_x_continuous(breaks = c(2020,2025,2030))
-
-lm2015A = ggplot(lm2015, aes(Year,MmtCO2e))+
-  geom_smooth(method = "lm", se = FALSE)+
-  ggtitle("Linear Model For the Decade 2020-2030",
-          subtitle = "2015 Projections")+
-  scale_x_continuous(breaks = c(2020,2025,2030))
-
-grid.arrange(lm2011A,lm2015A, ncol= 2)
-
-ggplot(lm2020, aes(Year,MmtCO2e))+
-  geom_smooth(method = "lm", se = FALSE)+
-   ggtitle("Linear Model For the Decade 2020-2030",
-          subtitle = "2020 Projections")+
-  scale_x_continuous(breaks = c(2020,2025,2030))
-
 ```
 
 ```{r}
+
+sum_lm_2011 = lm(MmtCO2e~Year, data = lm2011)
+co_fit = coef(sum_lm_2011)
+xyear <- 2030
+ypred <- co_fit[1] + co_fit[2]*xyear
+lm_11 = ggplot(lm2011, aes(x=Year,y=MmtCO2e)) +
+  geom_point() +
+  geom_abline(aes(slope = co_fit[2], intercept=co_fit[1]), color="blue") +
+  geom_point(aes(x = xyear, y=ypred), color = "red") +
+  xlab("Year") +
+  ylab("Energy Emission (MmtCO2e)") +
+  ggtitle("2010 Emission")+
+  scale_x_continuous(breaks = c(2020,2025,2030))
+
+sum_lm_2015 = lm(MmtCO2e~Year, data = lm2015)
+co_fit_2015 = coef(sum_lm_2015)
+xyear_2015 <- 2030
+ypred_2015 <- co_fit_2015[1] + co_fit_2015[2]*xyear_2015 
+lm_15 = ggplot(lm2015, aes(x=Year,y=MmtCO2e)) +
+  geom_point() +
+  geom_abline(aes(slope = co_fit_2015[2], intercept=co_fit_2015[1]), color="blue") +
+  geom_point(aes(x = xyear_2015, y=ypred_2015), color = "red") +
+  xlab("Year") +
+  ylab("Energy Emission (MmtCO2e)") +
+  ggtitle("2015 Emission")+
+  scale_x_continuous(breaks = c(2020,2025,2030))
+
+
+sum_lm_2020 = lm(MmtCO2e~Year, data = lm2020)
+co_fit_2020 = coef(sum_lm_2020)
+xyear_2020 <- 2030
+ypred_2020 <- co_fit_2020[1] + co_fit_2020[2]*xyear_2020 
+lm_20 = ggplot(lm2020, aes(x=Year,y=MmtCO2e)) +
+  geom_point() +
+  geom_abline(aes(slope = co_fit_2020[2], intercept=co_fit_2020[1]), color="blue") +
+  geom_point(aes(x = xyear_2020, y=ypred_2020), color = "red") +
+  xlab("Year") +
+  ylab("Energy Emission (MmtCO2e)") +
+  ggtitle("2020 Emissionl")+
+  scale_x_continuous(breaks = c(2020,2025,2030))
+
+lm_11+lm_15+lm_20
+```
+
+
+
+```{r echo=FALSE}
 EUS2020GDP = EnergyUseStat2020 %>% 
   filter(Source == "Gross Domestic Product (billion 2012 dollars)") %>%  
   pivot_wider(names_from = Source, values_from = quads) %>% 
@@ -744,44 +770,56 @@ eustats = inner_join(EUS2020CDE,EUS2020Energy) %>%
   inner_join(EUS2020GDP) %>% 
   inner_join(EUS2020POP)
 
+
 AA = ggplot(eustats, aes(Year,GDP))+
 geom_point()+
+  geom_smooth(method = "lm", se= FALSE)+
+  geom_vline(xintercept = 2030, color="red", linetype="dashed")+
   scale_x_discrete(breaks = c(2020,2030,2040,2050))+
+  ggtitle("GDP")+
   ylab("GDP(billion 2012 dollars)")
 BB = ggplot(eustats, aes(Year,population))+
 geom_point()+
+  geom_smooth(method = "lm", se= FALSE)+
   scale_x_discrete(breaks = c(2020,2030,2040,2050))+
+  geom_vline(xintercept = 2030, color="red", linetype="dashed")+
+  ggtitle("Population")+
   ylab("Population(Millions")
 CC = ggplot(eustats, aes(Year,CO2E))+
 geom_point()+
+  geom_smooth(method = "lm", se= FALSE)+
+  geom_vline(xintercept = 2030, color="red", linetype="dashed")+
   scale_x_discrete(breaks = c(2020,2030,2040,2050))+
+  ggtitle("CO2")+
   ylab("million metric tons CO2")
 DD = ggplot(eustats, aes(Year,`Total Energy Use`))+
 geom_point()+
+  geom_smooth(method = "lm", se= FALSE)+
+  geom_vline(xintercept = 2030, color="red", linetype="dashed")+
   scale_x_discrete(breaks = c(2020,2030,2040,2050))+
+  ggtitle("Total Consumption")+
   ylab("Total Energy Consumption (Quads)")
 
 grid.arrange(AA,BB,CC,DD, nrow= 2, ncol=2)
 
 ```
 
-**(12)How does the use of Petroleum and Coal changed from 2010-2019 period to 2020-2030 period?**
+
+## **(12)How does the use of Petroleum and Coal changed from 2010-2019 period to 2020-2030 period?**
 
 ### Petroleum
 
  - From the previous table, we can see that Petroleum is a main source of energy contributing to the energy emission. As the technology and use of energy changed and developed throughout the decase, we are interested in how the use of petroleum changes in the sector of transportation.  From the previous problem, we can see that the main sector uses petroleum is in transportation. We now want to compare the result within 20 dacades to see whether the mean use of Coal for emission changes significantly.
 
 ```{r echo=FALSE}
-p_c2010 = E2010A%>%
-    filter(Source == "Petroleum" & Sector != "Total by Fuel")%>%
-    filter(Year< 2020)
+p_c2011 = E2011A%>%
+    filter(Source == "Petroleum" )
 p_c2020 = E2020B%>%
-    filter(Source == "Petroleum" & Sector != "Total by Fuel")%>%
-    filter(Year < 2030 & Year >= 2020)
-p_c = bind_rows(p_c2010,p_c2020)%>%
-    filter(Sector == "Transportation")%>%
-    mutate(range = case_when(Year < 2019 ~ "2010",
-                     Year >= 2019 ~ "2020"))
+    filter(Source == "Petroleum" )
+p_c = bind_rows(p_c2011,p_c2020)%>%
+    # filter(Sector == "Transportation")%>%
+    mutate(range = case_when(Year < 2020 ~ "2010",
+                     Year >= 2020 ~ "2020"))
 sum_PC = p_c%>%
     group_by(range)%>%
     summarize(n = n(),
@@ -796,7 +834,30 @@ ggplot(p_c, aes(x=log10(MmtCO2e),color=range)) +
           subtitle="early = 2010-2020, recent = 2020-2030") +
   theme_bw()
 ```
-- Thus, We are 95% confident that the mean emission energy from Petroleum meausred by MmtCO2e in period 2009-2018 was between 227.9347 MmtCO2e lower to 296.1169 MmtCO2e higher than the mean emission energy from Petroleum meausred by MmtCO2e in period 2019-2029.
+#### Test the hypothesis that the mean energy use from Petroleum in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
+
+$$
+H_0: P_a = P_b
+$$
+
+$$
+H_a:  P_a \neq P_b
+$$
+```{r echo=FALSE}
+x1_p <- p_c %>%
+  filter(range == "2010") %>%
+  pull(MmtCO2e)
+x2_p <- p_c %>%
+  filter(range == "2020") %>%
+  pull(MmtCO2e)
+
+t.test(x1_p,x2_p)
+mean_diff_p <- mean(x1_p) - mean(x2_p)
+dof_p <- 153.18 ## from t.test() above
+se_p <- sqrt(sd(x1_p)^2/length(x1_p) + sd(x2_p)^2/length(x2_p))
+ci_5_p <- mean_diff_p + c(-1,1)*qt(0.975,dof_p)*se_p
+```
+
 
  - Now, using the mean and se generated from the previous t-test, we now are able to verify the p value by calculating the test statstistics.
 ```{r echo=FALSE}
@@ -804,20 +865,19 @@ tstat_p <- mean_diff_p/se_p
 ## pvalue
 pt(-abs(tstat_p), dof_p) + pt(abs(tstat_p), dof_p, lower.tail=FALSE)
 ```
- - The p value is 0.0002402814 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of petroleum in transportation is different from 2010-2020 period to 2020-2030 period. 
+ - The p value is 2.720731e-064 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of petroleum is different from 2010-2020 period to 2020-2030 period. 
+ 
 ### Coal
 
-- From the previous table, we can see that Coal is also a main source of energy contributing to the energy emission. Also, we noticed that the major use of Coal is in Sector of Electric Power. As the technology and use of energy changed and developed throughout the decase, we are instrerested in how the use of Coal changes in the sector of electric power. We now want to compare the result within 20 dacades to see whether the mean use of Coal for emission in Electric Power changes significantly.
+- From the previous table, we can see that Coal is also a main source of energy contributing to the energy emission. As the technology and use of energy changed and developed throughout the decase, we are instrerested in how the use of Coal changes. We now want to compare the result within 20 dacades to see whether the mean use of Coal for emission in Electric Power changes significantly.
 ```{r echo=FALSE}
-c2010 = E2010A%>%
+c2011 = E2011A%>%
     filter(Source == "Coal" & Sector != "Total by Fuel")%>%
-    filter(Sector == "Electric Power")%>%
     filter(Year < 2019)
 c2020 = E2020B%>%
     filter(Source == "Coal" & Sector != "Total by Fuel")%>%
-    filter(Sector == "Electric Power")%>%
     filter(Year < 2030 & Year >=2020)
-c = bind_rows(c2010,c2020)%>%
+c = bind_rows(c2011,c2020)%>%
     mutate(range = case_when(Year < 2019 ~ "2010",
                      Year >= 2019 ~ "2020"))
 sum_C = c%>%
@@ -826,6 +886,7 @@ sum_C = c%>%
               sum_MmtCO2e = sum(MmtCO2e),
               mean = mean(sum_MmtCO2e),
               sd = sd(MmtCO2e))
+
 ggplot(c, aes(x=log10(MmtCO2e),color=range)) +
   geom_density() +
   xlab("MmtCO2e(log10)") +
@@ -854,12 +915,10 @@ x2_c <- c %>%
 ```{r echo=FALSE}
 t.test(x1_c,x2_c)
 mean_diff_c <- mean(x1_c) - mean(x2_c)
-dof_c <- 16.803 ## from t.test() above
+dof_c <- 76.249 ## from t.test() above
 se_c <- sqrt(sd(x1_c)^2/length(x1_c) + sd(x2_c)^2/length(x2_c))
 ci_5_c <- mean_diff_c + c(-1,1)*qt(0.975,dof_c)*se_c
-signif(ci_5_c,3)
 ```
-We are 95% confident that the mean emission energy from Coal meausred by MmtCO2e in period 2009-2018 was between 37.6 MmtCO2e lower to 501.0 MmtCO2e higher than the mean emission energy from Coal meausred by MmtCO2e in period 2019-2029.
 
 
 Test the hypothesis that the mean energy use from Coal in 2010-2019 period is equal to that in the recent era versus that alternative that they are different. 
@@ -869,30 +928,8 @@ tstat_c <- mean_diff_c/se_c
 ## pvalue
 pt(-abs(tstat_c), dof_c) + pt(abs(tstat_c), dof_c, lower.tail=FALSE)
 ```
- - The p value is 4.151938e-51 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of Coal in electric power is different from 2010-2020 period to 2020-2030 period. As renewable and other more efficient energy source being used, from the graph in previous question, we can seethe use of coal decline in electric power which contributing much lesser in energy emission. This is a good news because the coal-fired power plants release more greenhouse gases per unit of energy produced than any other electricity source (according to https://www.greenamerica.org/fight-dirty-energy/amazon-build-cleaner-cloud/coal-why-it-dirty).
+ - The p value is 0.0005189996 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of Coal  is different from 2010-2020 period to 2020-2030 period. As renewable and other more efficient energy source being used, from the graph in previous question, we can seethe use of coal decline which contributing much lesser in energy emission. This is a good news because the coal-fired power plants release more greenhouse gases per unit of energy produced than any other electricity source (according to https://www.greenamerica.org/fight-dirty-energy/amazon-build-cleaner-cloud/coal-why-it-dirty).
 
-#### Test the hypothesis that the mean energy use from Petroleum in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
-
-$$
-H_0: P_a = P_b
-$$
-
-$$
-H_a:  P_a \neq P_b
-$$
-```{r echo=FALSE}
-x1_p <- p_c %>%
-  filter(range == "2010") %>%
-  pull(MmtCO2e)
-x2_p <- p_c %>%
-  filter(range == "2020") %>%
-  pull(MmtCO2e)
-t.test(x1_p,x2_p)
-mean_diff_p <- mean(x1_p) - mean(x2_p)
-dof_p <- 15.664 ## from t.test() above
-se_p <- sqrt(sd(x1_p)^2/length(x1_p) + sd(x2_p)^2/length(x2_p))
-ci_5_p <- mean_diff_p + c(-1,1)*qt(0.975,dof_p)*se_p
-```
 
 
 
