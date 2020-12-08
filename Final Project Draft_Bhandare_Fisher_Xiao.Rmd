@@ -22,41 +22,37 @@ library(gridExtra)
 ##### Group Members: Lindsey Fisher(2020 Data), Param Bhandare(2015 Data), Yunqing Xiao(2011 Data)
 
 ```{r, include=FALSE}
-E2011 =read_csv("emissions2011.csv")
-C2011 = read_csv("consumption2011.csv")
+E2010 = read_csv("emissions2010.csv")
+C2010 = read_csv("consumption2010.csv")
 E2015 = read_csv("emissions2015.csv")
 C2015 = read_csv("consumption2015.csv")
 E2020 = read_csv("emissions2020.csv")
 C2020 = read_csv("consumption2020.csv")
 
-
-E2011 = E2011 %>% 
+E2010 = E2010 %>%
     pivot_longer(
    cols = c(3:30),
    names_to = "Year",
    names_prefix = "Year",
    values_to = "MmtCO2e",
-   values_drop_na = TRUE) 
-    
-E2011A = E2011 %>%
-mutate(Year = as.numeric(as.character(unlist(E2011$Year))),
-       GrowthRate = as.numeric(sub("%"," ",E2011$`Growth Rate (2009-2035)`))) %>% 
-select(Year, Sector, Source, MmtCO2e,GrowthRate) %>% 
-    filter(Sector != "NA")
+   values_drop_na = TRUE)
 
-C2011 = C2011 %>%
+E2010A = E2010 %>%
+mutate(Year = as.numeric(as.character(unlist(E2010$Year))),
+       GrowthRate = as.numeric(sub("%"," ",E2010$`Growth (2008-2035)`))) %>%
+select(Year, Sector, Source, MmtCO2e,GrowthRate) %>%
+    filter(Sector != "NA")
+C2010A = C2010 %>%
     pivot_longer(
    cols = c(3:30),
    names_to = "Year",
    names_prefix = "Year",
    values_to = "quads",
    values_drop_na = TRUE)
-
-C2011 = C2011 %>% 
-mutate(Year = as.numeric(as.character(unlist(C2011$Year))),
-       GrowthRate = as.numeric(sub("%"," ",C2011$`Growth Rate (2009-2035)`))) %>% 
-  filter(Sector != "Energy Use and Related Statistics	") %>% 
-select(Year, Sector, Source, quads,GrowthRate) 
+C2010B = C2010A %>%
+mutate(Year = as.numeric(as.character(unlist(C2010A$Year))),
+       GrowthRate = as.numeric(sub("%","",C2010A$X32))) %>%
+    select(Year, Sector, Source, quads,GrowthRate)
 
 
 E2015 = E2015 %>% 
@@ -426,55 +422,18 @@ grid.arrange(renew_2011,renew_2015,renew_2020, ncol =3)
 ```
 
 ## **(6) Which energy source is utilized the most in each sector?**
-```{r,echo = FALSE}
-sector_most_2011 <- C2011 %>%
-    filter(!str_detect(Source, "Total")) %>%
-    filter(Year == "2011") %>%
-    filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
-    group_by(Sector) %>%
-    slice_max(order_by = quads, n = 1)
-
-sectormostconsume2015 = C2015B %>%
-    slice(1:3770) %>%
-    filter(Source != "Total" & Year == 2015) %>% 
-    filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
-    group_by(Sector) %>%
-    slice_max(order_by = quads, n = 1)
-sectormostconsume2020 = C2020B %>%
-    filter(Source != "Total" & Year == 2019) %>% 
-    filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
-    group_by(Sector) %>%
-    slice_max(order_by = quads, n = 1)
-most_used_by_sector = bind_rows(sector_most_2011,sectormostconsume2015,sectormostconsume2020)
-```
-
-```{r,echo = FALSE}
-ggplot(most_used_by_sector, aes(Sector, quads, fill = Source) ) + 
-    geom_col()+
-    facet_wrap( ~ Year, nrow = 1) + 
-    ggtitle("Which Fuel Source is Utilized Most in Each Sector?")+
-    ylab("Energy Consumption per Sector(quads)")+
-    xlab("Sector")+
-    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-```
-
-## **(7)Which sector has the highest growth rate for each fuel source?**
-
-```{r,echo = FALSE}
-ratesector2011 = C2011 %>%
-    filter(Year == 2011) %>% 
-filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+```{r echo=FALSE}
+ratesector2010 = C2010B %>%
+    filter(Year == 2009 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use and Related Statistics" & Sector != "Carbon Dioxide Emissions (million metric" ) %>%
     group_by(Sector, Year) %>%
     slice_max(order_by = GrowthRate, n = 1) %>%
     arrange(desc(GrowthRate)) %>%
     select(Sector, Source, GrowthRate,Year)%>%
     group_by(Source) %>%
     slice_max(order_by = GrowthRate, n = 1)
-
 ratesector2015 = C2015B %>%
     slice(1:3770) %>%
-    filter(Year == 2014) %>% 
-filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    filter(Year == 2014 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
     group_by(Sector, Year) %>% 
     slice_max(order_by = GrowthRate, n = 1) %>% 
     arrange(desc(GrowthRate)) %>%
@@ -482,15 +441,39 @@ filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential"
     group_by(Source) %>%
     slice_max(order_by = GrowthRate, n = 1)
 ratesector2020 = C2020B %>%
-    filter(Year == 2019) %>% 
-filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    filter(Year == 2019 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
     group_by(Sector, Year) %>% 
     slice_max(order_by = GrowthRate, n = 1) %>% 
     arrange(desc(GrowthRate)) %>% 
     select(Sector,Source,GrowthRate,Year)%>%
     group_by(Source) %>%
     slice_max(order_by = GrowthRate, n = 1)
-ratesector = bind_rows(ratesector2011,ratesector2015,ratesector2020)
+ratesector = bind_rows(ratesector2010,ratesector2015,ratesector2020)
+
+```
+
+## **(7)Which sector has the highest growth rate for each fuel source?**
+
+```{r, include=FALSE}
+ratesource2010 = C2010B %>%
+    filter(Year == "2010" & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use and Related Statistics") %>% 
+    select(Source,Sector,GrowthRate)%>%
+    arrange(desc(GrowthRate))%>%
+    slice_max(order_by = GrowthRate, n = 1) 
+
+ratesource2015 = C2015B %>%
+    filter(Year == 2014 & Sector != "NA" & 
+               Sector != "Unspecified Sector" & 
+               Sector != "Energy Use & Related Statistics") %>% 
+    slice_max(order_by = GrowthRate, n = 1) %>%
+    select(Source,Sector,GrowthRate)
+
+ratesource2020 = C2020B %>%
+    filter(Year == 2019 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
+    slice_max(order_by = GrowthRate, n = 1) %>%
+    select(Source,Sector,GrowthRate)
+bind_rows(ratesource2010,ratesource2015,ratesource2020)
+
 ```
 
 ```{r,echo = FALSE}
@@ -658,13 +641,139 @@ ggplot(emission_2015_2020_combined, aes(Year, MmtCO2e, fill = Dataset)) +
     
 ```
 
+## 12.How does the use of Petroleum and Coal changed from 2010-2019 period to 2020-2030 period?
+### Petroleum
+
+ - From the previous table, we can see that Petroleum is a main source of energy contributing to the energy emission. As the technology and use of energy changed and developed throughout the decase, we are interested in how the use of petroleum changes in the sector of transportation.  From the previous problem, we can see that the main sector uses petroleum is in transportation. We now want to compare the result within 20 dacades to see whether the mean use of Coal for emission changes significantly.
+
+```{r echo=FALSE}
+p_c2010 = E2010A%>%
+    filter(Source == "Petroleum" & Sector != "Total by Fuel")%>%
+    filter(Year< 2020)
+p_c2020 = E2020B%>%
+    filter(Source == "Petroleum" & Sector != "Total by Fuel")%>%
+    filter(Year < 2030 & Year >= 2020)
+p_c = bind_rows(p_c2010,p_c2020)%>%
+    filter(Sector == "Transportation")%>%
+    mutate(range = case_when(Year < 2019 ~ "2010",
+                     Year >= 2019 ~ "2020"))
+sum_PC = p_c%>%
+    group_by(range)%>%
+    summarize(n = n(),
+              sum_MmtCO2e = sum(MmtCO2e),
+              mean = mean(sum_MmtCO2e),
+              sd = sd(MmtCO2e))
+ggplot(p_c, aes(x=log10(MmtCO2e),color=range)) +
+  geom_density() +
+  xlab("MmtCO2e(log10)") +
+  ylab("Density") +
+  ggtitle("Mean source of energy in Emission (MmtCO2e)",
+          subtitle="early = 2010-2020, recent = 2020-2030") +
+  theme_bw()
+```
+- Thus, We are 95% confident that the mean emission energy from Petroleum meausred by MmtCO2e in period 2009-2018 was between 227.9347 MmtCO2e lower to 296.1169 MmtCO2e higher than the mean emission energy from Petroleum meausred by MmtCO2e in period 2019-2029.
+
+ - Now, using the mean and se generated from the previous t-test, we now are able to verify the p value by calculating the test statstistics.
+```{r echo=FALSE}
+tstat_p <- mean_diff_p/se_p
+## pvalue
+pt(-abs(tstat_p), dof_p) + pt(abs(tstat_p), dof_p, lower.tail=FALSE)
+```
+ - The p value is 0.0002402814 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of petroleum in transportation is different from 2010-2020 period to 2020-2030 period. 
+### Coal
+
+- From the previous table, we can see that Coal is also a main source of energy contributing to the energy emission. Also, we noticed that the major use of Coal is in Sector of Electric Power. As the technology and use of energy changed and developed throughout the decase, we are instrerested in how the use of Coal changes in the sector of electric power. We now want to compare the result within 20 dacades to see whether the mean use of Coal for emission in Electric Power changes significantly.
+```{r echo=FALSE}
+c2010 = E2010A%>%
+    filter(Source == "Coal" & Sector != "Total by Fuel")%>%
+    filter(Sector == "Electric Power")%>%
+    filter(Year < 2019)
+c2020 = E2020B%>%
+    filter(Source == "Coal" & Sector != "Total by Fuel")%>%
+    filter(Sector == "Electric Power")%>%
+    filter(Year < 2030 & Year >=2020)
+c = bind_rows(c2010,c2020)%>%
+    mutate(range = case_when(Year < 2019 ~ "2010",
+                     Year >= 2019 ~ "2020"))
+sum_C = c%>%
+    group_by(range)%>%
+    summarize(n = n(),
+              sum_MmtCO2e = sum(MmtCO2e),
+              mean = mean(sum_MmtCO2e),
+              sd = sd(MmtCO2e))
+ggplot(c, aes(x=log10(MmtCO2e),color=range)) +
+  geom_density() +
+  xlab("MmtCO2e(log10)") +
+  ylab("") +
+  ggtitle("Coal Use in Electric Power for Energy Emission",
+          subtitle="early = 2010-2020, recent = 2020-2030") +
+  theme_bw()
+```
+#### Test the hypothesis that the mean energy use from Coal in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
+
+$$
+H_0: P_a = P_b
+$$
+
+$$
+H_a:  P_a \neq P_b
+$$
+```{r echo=FALSE}
+x1_c <- c %>%
+  filter(range == "2010") %>%
+  pull(MmtCO2e)
+x2_c <- c %>%
+  filter(range == "2020") %>%
+  pull(MmtCO2e)
+```
+```{r echo=FALSE}
+t.test(x1_c,x2_c)
+mean_diff_c <- mean(x1_c) - mean(x2_c)
+dof_c <- 16.803 ## from t.test() above
+se_c <- sqrt(sd(x1_c)^2/length(x1_c) + sd(x2_c)^2/length(x2_c))
+ci_5_c <- mean_diff_c + c(-1,1)*qt(0.975,dof_c)*se_c
+signif(ci_5_c,3)
+```
+We are 95% confident that the mean emission energy from Coal meausred by MmtCO2e in period 2009-2018 was between 37.6 MmtCO2e lower to 501.0 MmtCO2e higher than the mean emission energy from Coal meausred by MmtCO2e in period 2019-2029.
+
+
+Test the hypothesis that the mean energy use from Coal in 2010-2019 period is equal to that in the recent era versus that alternative that they are different. 
+
+```{r echo=FALSE}
+tstat_c <- mean_diff_c/se_c
+## pvalue
+pt(-abs(tstat_c), dof_c) + pt(abs(tstat_c), dof_c, lower.tail=FALSE)
+```
+ - The p value is 4.151938e-51 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of Coal in electric power is different from 2010-2020 period to 2020-2030 period. As renewable and other more efficient energy source being used, from the graph in previous question, we can seethe use of coal decline in electric power which contributing much lesser in energy emission. This is a good news because the coal-fired power plants release more greenhouse gases per unit of energy produced than any other electricity source (according to https://www.greenamerica.org/fight-dirty-energy/amazon-build-cleaner-cloud/coal-why-it-dirty).
 
 
 
 ### Discussion
 
 Param:
-Broadly speaking, based on the 2015 and 2020 datasets, it is certain that emissions have dropped. However, it is also evident that consumption will either mostly stay steady or rise slowly. Projections for consumption skyrocket in each dataset regardless of year, so it does appear the AEO is taking the pessimistic outlook for their projections. 
+Broadly speak#### Test the hypothesis that the mean energy use from Petroleum in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
+
+$$
+H_0: P_a = P_b
+$$
+
+$$
+H_a:  P_a \neq P_b
+$$
+```{r echo=FALSE}
+x1_p <- p_c %>%
+  filter(range == "2010") %>%
+  pull(MmtCO2e)
+x2_p <- p_c %>%
+  filter(range == "2020") %>%
+  pull(MmtCO2e)
+
+t.test(x1_p,x2_p)
+mean_diff_p <- mean(x1_p) - mean(x2_p)
+dof_p <- 15.664 ## from t.test() above
+se_p <- sqrt(sd(x1_p)^2/length(x1_p) + sd(x2_p)^2/length(x2_p))
+ci_5_p <- mean_diff_p + c(-1,1)*qt(0.975,dof_p)*se_p
+```ing, based on the 2015 and 2020 datasets, it is certain that emissions have dropped. However, it is also evident that consumption will either mostly stay steady or rise slowly. Projections for consumption skyrocket in each dataset regardless of year, so it does appear the AEO is taking the pessimistic outlook for their projections. 
 
 The datasets for 2015 energy outlook seems to be slightly inconsistent with format and depth of projections with other datasets. This is not too much of a shortcoming, but as analysts, it does leave us guessing for the verification of some of the prior projections in later datasets within a single dataset. Additionally, the outlook is made during the fiscal year that the outlook is released, so only the previous few years will be accurate. This requires more data to be obtained, which in turn requires more standardization between the format of each dataset. Perhaps, given the previous years data-sets and actual values, a match between the mesh of datas that are equal could come handy. And to test performance even further, a whole parity chart could be made between different datasets actual performance and projected performance.
 
