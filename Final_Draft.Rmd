@@ -7,11 +7,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 library(tidyverse)
 library(ggplot2)
 library(lubridate)
-library(cowplot)
 library(patchwork)
 library(forcats)
 source("viridis.R")
@@ -110,24 +108,17 @@ mutate(Year = as.numeric(as.character(unlist(C2020A$Year))),
 
 EnergyUseStat2020 = C2020B %>% 
   filter(Sector == "Energy Use & Related Statistics" | Source == "Carbon Dioxide Emissions (million metric tons carbon dioxide)")
+
 ```
 
 
 # Introduction
 
-  We were interested in looking at an environmentally related issue as this topici is currently a topic of debate. It is important to drive policy with a data driven factual approach, so we are using this report to visually represent United States energy consumption and Green House Gas Emissions.We are using energy statistics from the Annual Energy Outlook (AEO) report which is published each year by the the US Energy Information Administration. We chose to look at the AEO reports published in 2011, 2015 and 2020. We chose these years  because they represent 5 year benchmarks that cover the last decade. 
+  We at first agreed that we were interested in looking at an environmentally related issue as green energy and climate change is currently a hot topic for debate. We are using this report to visually represent United States energy consumption and Green House Gas Emissions.We are using energy statistics from the Annual Energy Outlook (AEO) report which is published each year by the the US Energy Information Administration. We chose to look at the AEO reports published in 2011, 2015 and 2020 since they within one decade and they will serve as a comparison to see if we have reduced emissions and consumption overall in the past decade.
+  For this report we will visually represent relationships between energy data metrics while also looking at our progress as a country for reducing emissions and consumption overall. We believe there are interesting relationships between variables as well as among the separate data sets to be uncovered through visual analysis and modeling. We are interested in relationships between the variables such as: Industry Sector, Fuel Source, Emissions, and Consumption metircs within each of the data sets as well as comparing the variables across the separate years to look for trends.
+  We will to use this analysis to locate key areas where the US is suceeding at reducing emissions and areas where we need to focus on improvement. We will assess the validity of the AEOs projections by comparing the future projections from the 2010 and 2015 reports to the observed measures from the year 2019 supplied by the 2020 report. 
+  In order to accomplish our goal of identifying if the US is reducing emissions, we will compare the prediction of enery use in 2020 made from the 2010 and 2015 data to the actual data from 2020 to see whether the emissions and consumption decreased or increased. Also, we will look at individual energy source and sectors to see which of the reduced the most and which of them increased the most in the past decade and discuss the reason behind these changes.
 
-  For this report we hope to not only visually explain the statistics from energy data but also to show how we are doing as a country in the battle to  reducing emissions and consumption overall.These reports include actual measure from the year prior to their publishing and also projections for 20-30 years into the future past the report date. 
-  
-  We believe there are interesting relationships between variables to be uncoveered through visual analysis and modeling. We are interested in relationships between the variables such as: Industry Sector, Fuel Source, Emissions, and Consumption metircs within each of the data sets as well as comparing the variables across the separate years to look for trends. We will also compare  the prior years (2011 & 2015) projections to the observed measures from the 2020 report.We hope to use this analysis to locate key areas where the US is doing well in reducing emissions and consumption and areas where we need to focus on improvement.  
-
-XIAO:
-
-For the past decade, the use of energy became more and more important in our daily life, and the modes and source of energy using and mission has changed throughout the year. Thus, We were interested in looking at something environmentally related, so we chose US energy consumption and emissions. We chose two reports from the Annual Energy Outlook (AEO) report from the US Energy Information Administration. We chose to look at the AEO published in 2010, 2015, and 2020 because they within one decade and will serve as a comparison to see if we have reduced emissions and consumption overall in the past decade. 
- - We believe there is a lot of relationships between variables to be examined and uncovered. We are interested in relationships between the variables in each of the data sets as well as comparing the variables across the separate data sets to look for trends. For example, how does the major source of energy changes within the decade, and how does the total use of energy changes in the past 10 year.
- - We hope to use this analysis to locate key areas where the US is doing well in reducing emissions and consumption and areas where we need to focus on improvement. We hope to assess the validity of the AEOs projections by comparing the future projections in the 2010 and 2015 report to the observed measures from the 2020 report. 
-  - In order to look at what did the US do well in reducing emissions and consumption, we will compare our prediction of enery use in 2020 made from the 2010 and 2015 data to the actual data from 2020 to see whether the emissions and consumption decreased or increased. Also, we will look at individual energy source and sectors to see which of the reduced the most and which of them increased the most in the past decade and discuss the reason behind these changes.
-  - 
 # Background
 
     Describe the data, how it was collected, what the variables mean.
@@ -678,72 +669,10 @@ ggplot(emission_2015_2020_combined, aes(Year, MmtCO2e, fill = Dataset)) +
     geom_col()
 ```
 
-## **(11) Compare linear models for 2020-2030 time span between the 2011 and 2015 outlook data. Are the slopes significantly different?** 
-
-```{r, echo = FALSE}
-lm2011 = E2011A %>% 
-  filter(Year == 2020 | Year == 2021 | Year == 2022 | Year == 2023 | Year == 2024 | Year == 2025 | Year == 2026 | Year == 2027 | Year == 2028 | Year == 2029| Year == 2030) %>% 
-filter(Source == "Total" & Sector == "TotalbyFuel") %>% 
-  select(Year, MmtCO2e)
-lm2015 = E2015A %>% 
-   filter(Year == 2020 | Year == 2021 | Year == 2022 | Year == 2023 | Year == 2024 | Year == 2025 | Year == 2026 | Year == 2027 | Year == 2028 | Year == 2029| Year == 2030) %>% 
-filter(Source == "Total" & Sector == "Total by Fuel") %>% 
-  select(Year, MmtCO2e)
+## **(11) What are the projected trends for GDP, Total Energy Consumption, Emissions, and Population projected to interact over the next 10 years? Do these seem to depend upon one another?**
   
-lm2020 = E2020B %>% 
-   filter(Year == 2020 | Year == 2021 | Year == 2022 | Year == 2023 | Year == 2024 | Year == 2025 | Year == 2026 | Year == 2027 | Year == 2028 | Year == 2029| Year == 2030) %>% 
-filter(Source == "Total" & Sector == "Total by Fuel") %>% 
-  select(Year, MmtCO2e)
-```
-
 ```{r}
 
-sum_lm_2011 = lm(MmtCO2e~Year, data = lm2011)
-co_fit = coef(sum_lm_2011)
-xyear <- 2030
-ypred <- co_fit[1] + co_fit[2]*xyear
-lm_11 = ggplot(lm2011, aes(x=Year,y=MmtCO2e)) +
-  geom_point() +
-  geom_abline(aes(slope = co_fit[2], intercept=co_fit[1]), color="blue") +
-  geom_point(aes(x = xyear, y=ypred), color = "red") +
-  xlab("Year") +
-  ylab("Energy Emission (MmtCO2e)") +
-  ggtitle("2010 Emission")+
-  scale_x_continuous(breaks = c(2020,2025,2030))
-
-sum_lm_2015 = lm(MmtCO2e~Year, data = lm2015)
-co_fit_2015 = coef(sum_lm_2015)
-xyear_2015 <- 2030
-ypred_2015 <- co_fit_2015[1] + co_fit_2015[2]*xyear_2015 
-lm_15 = ggplot(lm2015, aes(x=Year,y=MmtCO2e)) +
-  geom_point() +
-  geom_abline(aes(slope = co_fit_2015[2], intercept=co_fit_2015[1]), color="blue") +
-  geom_point(aes(x = xyear_2015, y=ypred_2015), color = "red") +
-  xlab("Year") +
-  ylab("Energy Emission (MmtCO2e)") +
-  ggtitle("2015 Emission")+
-  scale_x_continuous(breaks = c(2020,2025,2030))
-
-
-sum_lm_2020 = lm(MmtCO2e~Year, data = lm2020)
-co_fit_2020 = coef(sum_lm_2020)
-xyear_2020 <- 2030
-ypred_2020 <- co_fit_2020[1] + co_fit_2020[2]*xyear_2020 
-lm_20 = ggplot(lm2020, aes(x=Year,y=MmtCO2e)) +
-  geom_point() +
-  geom_abline(aes(slope = co_fit_2020[2], intercept=co_fit_2020[1]), color="blue") +
-  geom_point(aes(x = xyear_2020, y=ypred_2020), color = "red") +
-  xlab("Year") +
-  ylab("Energy Emission (MmtCO2e)") +
-  ggtitle("2020 Emissionl")+
-  scale_x_continuous(breaks = c(2020,2025,2030))
-
-lm_11+lm_15+lm_20
-```
-
-
-
-```{r echo=FALSE}
 EUS2020GDP = EnergyUseStat2020 %>% 
   filter(Source == "Gross Domestic Product (billion 2012 dollars)") %>%  
   pivot_wider(names_from = Source, values_from = quads) %>% 
@@ -764,62 +693,55 @@ EUS2020Energy = EnergyUseStat2020 %>%
   filter(Source == "Total Energy Use") %>% 
   pivot_wider(names_from = Source, values_from = quads) %>% 
   select(Year,`Total Energy Use`) 
-
-
 eustats = inner_join(EUS2020CDE,EUS2020Energy) %>% 
   inner_join(EUS2020GDP) %>% 
-  inner_join(EUS2020POP)
+  inner_join(EUS2020POP) %>% 
+  filter(Year == 2020 |Year == 2021|Year == 2022|Year == 2023|Year == 2024|Year == 2025|Year == 2026|Year == 2027|Year == 2028|Year == 2029|Year == 2030)
 
 
 AA = ggplot(eustats, aes(Year,GDP))+
 geom_point()+
-  geom_smooth(method = "lm", se= FALSE)+
-  geom_vline(xintercept = 2030, color="red", linetype="dashed")+
+  geom_smooth()+
   scale_x_discrete(breaks = c(2020,2030,2040,2050))+
-  ggtitle("GDP")+
   ylab("GDP(billion 2012 dollars)")
+
 BB = ggplot(eustats, aes(Year,population))+
 geom_point()+
-  geom_smooth(method = "lm", se= FALSE)+
+  geom_smooth()+
   scale_x_discrete(breaks = c(2020,2030,2040,2050))+
-  geom_vline(xintercept = 2030, color="red", linetype="dashed")+
-  ggtitle("Population")+
   ylab("Population(Millions")
 CC = ggplot(eustats, aes(Year,CO2E))+
 geom_point()+
-  geom_smooth(method = "lm", se= FALSE)+
-  geom_vline(xintercept = 2030, color="red", linetype="dashed")+
+  geom_smooth()+
   scale_x_discrete(breaks = c(2020,2030,2040,2050))+
-  ggtitle("CO2")+
   ylab("million metric tons CO2")
 DD = ggplot(eustats, aes(Year,`Total Energy Use`))+
 geom_point()+
-  geom_smooth(method = "lm", se= FALSE)+
-  geom_vline(xintercept = 2030, color="red", linetype="dashed")+
+  geom_smooth()+
   scale_x_discrete(breaks = c(2020,2030,2040,2050))+
-  ggtitle("Total Consumption")+
   ylab("Total Energy Consumption (Quads)")
 
 grid.arrange(AA,BB,CC,DD, nrow= 2, ncol=2)
 
 ```
 
-
-## **(12)How does the use of Petroleum and Coal changed from 2010-2019 period to 2020-2030 period?**
+**(12)How does the use of Petroleum and Coal changed from 2010-2019 period to 2020-2030 period?**
 
 ### Petroleum
 
  - From the previous table, we can see that Petroleum is a main source of energy contributing to the energy emission. As the technology and use of energy changed and developed throughout the decase, we are interested in how the use of petroleum changes in the sector of transportation.  From the previous problem, we can see that the main sector uses petroleum is in transportation. We now want to compare the result within 20 dacades to see whether the mean use of Coal for emission changes significantly.
 
 ```{r echo=FALSE}
-p_c2011 = E2011A%>%
-    filter(Source == "Petroleum" )
+p_c2010 = E2010A%>%
+    filter(Source == "Petroleum" & Sector != "Total by Fuel")%>%
+    filter(Year< 2020)
 p_c2020 = E2020B%>%
-    filter(Source == "Petroleum" )
-p_c = bind_rows(p_c2011,p_c2020)%>%
-    # filter(Sector == "Transportation")%>%
-    mutate(range = case_when(Year < 2020 ~ "2010",
-                     Year >= 2020 ~ "2020"))
+    filter(Source == "Petroleum" & Sector != "Total by Fuel")%>%
+    filter(Year < 2030 & Year >= 2020)
+p_c = bind_rows(p_c2010,p_c2020)%>%
+    filter(Sector == "Transportation")%>%
+    mutate(range = case_when(Year < 2019 ~ "2010",
+                     Year >= 2019 ~ "2020"))
 sum_PC = p_c%>%
     group_by(range)%>%
     summarize(n = n(),
@@ -834,30 +756,7 @@ ggplot(p_c, aes(x=log10(MmtCO2e),color=range)) +
           subtitle="early = 2010-2020, recent = 2020-2030") +
   theme_bw()
 ```
-#### Test the hypothesis that the mean energy use from Petroleum in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
-
-$$
-H_0: P_a = P_b
-$$
-
-$$
-H_a:  P_a \neq P_b
-$$
-```{r echo=FALSE}
-x1_p <- p_c %>%
-  filter(range == "2010") %>%
-  pull(MmtCO2e)
-x2_p <- p_c %>%
-  filter(range == "2020") %>%
-  pull(MmtCO2e)
-
-t.test(x1_p,x2_p)
-mean_diff_p <- mean(x1_p) - mean(x2_p)
-dof_p <- 153.18 ## from t.test() above
-se_p <- sqrt(sd(x1_p)^2/length(x1_p) + sd(x2_p)^2/length(x2_p))
-ci_5_p <- mean_diff_p + c(-1,1)*qt(0.975,dof_p)*se_p
-```
-
+- Thus, We are 95% confident that the mean emission energy from Petroleum meausred by MmtCO2e in period 2009-2018 was between 227.9347 MmtCO2e lower to 296.1169 MmtCO2e higher than the mean emission energy from Petroleum meausred by MmtCO2e in period 2019-2029.
 
  - Now, using the mean and se generated from the previous t-test, we now are able to verify the p value by calculating the test statstistics.
 ```{r echo=FALSE}
@@ -865,19 +764,20 @@ tstat_p <- mean_diff_p/se_p
 ## pvalue
 pt(-abs(tstat_p), dof_p) + pt(abs(tstat_p), dof_p, lower.tail=FALSE)
 ```
- - The p value is 2.720731e-064 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of petroleum is different from 2010-2020 period to 2020-2030 period. 
- 
+ - The p value is 0.0002402814 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of petroleum in transportation is different from 2010-2020 period to 2020-2030 period. 
 ### Coal
 
-- From the previous table, we can see that Coal is also a main source of energy contributing to the energy emission. As the technology and use of energy changed and developed throughout the decase, we are instrerested in how the use of Coal changes. We now want to compare the result within 20 dacades to see whether the mean use of Coal for emission in Electric Power changes significantly.
+- From the previous table, we can see that Coal is also a main source of energy contributing to the energy emission. Also, we noticed that the major use of Coal is in Sector of Electric Power. As the technology and use of energy changed and developed throughout the decase, we are instrerested in how the use of Coal changes in the sector of electric power. We now want to compare the result within 20 dacades to see whether the mean use of Coal for emission in Electric Power changes significantly.
 ```{r echo=FALSE}
-c2011 = E2011A%>%
+c2010 = E2010A%>%
     filter(Source == "Coal" & Sector != "Total by Fuel")%>%
+    filter(Sector == "Electric Power")%>%
     filter(Year < 2019)
 c2020 = E2020B%>%
     filter(Source == "Coal" & Sector != "Total by Fuel")%>%
+    filter(Sector == "Electric Power")%>%
     filter(Year < 2030 & Year >=2020)
-c = bind_rows(c2011,c2020)%>%
+c = bind_rows(c2010,c2020)%>%
     mutate(range = case_when(Year < 2019 ~ "2010",
                      Year >= 2019 ~ "2020"))
 sum_C = c%>%
@@ -886,7 +786,6 @@ sum_C = c%>%
               sum_MmtCO2e = sum(MmtCO2e),
               mean = mean(sum_MmtCO2e),
               sd = sd(MmtCO2e))
-
 ggplot(c, aes(x=log10(MmtCO2e),color=range)) +
   geom_density() +
   xlab("MmtCO2e(log10)") +
@@ -915,10 +814,12 @@ x2_c <- c %>%
 ```{r echo=FALSE}
 t.test(x1_c,x2_c)
 mean_diff_c <- mean(x1_c) - mean(x2_c)
-dof_c <- 76.249 ## from t.test() above
+dof_c <- 16.803 ## from t.test() above
 se_c <- sqrt(sd(x1_c)^2/length(x1_c) + sd(x2_c)^2/length(x2_c))
 ci_5_c <- mean_diff_c + c(-1,1)*qt(0.975,dof_c)*se_c
+signif(ci_5_c,3)
 ```
+We are 95% confident that the mean emission energy from Coal meausred by MmtCO2e in period 2009-2018 was between 37.6 MmtCO2e lower to 501.0 MmtCO2e higher than the mean emission energy from Coal meausred by MmtCO2e in period 2019-2029.
 
 
 Test the hypothesis that the mean energy use from Coal in 2010-2019 period is equal to that in the recent era versus that alternative that they are different. 
@@ -928,8 +829,30 @@ tstat_c <- mean_diff_c/se_c
 ## pvalue
 pt(-abs(tstat_c), dof_c) + pt(abs(tstat_c), dof_c, lower.tail=FALSE)
 ```
- - The p value is 0.0005189996 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of Coal  is different from 2010-2020 period to 2020-2030 period. As renewable and other more efficient energy source being used, from the graph in previous question, we can seethe use of coal decline which contributing much lesser in energy emission. This is a good news because the coal-fired power plants release more greenhouse gases per unit of energy produced than any other electricity source (according to https://www.greenamerica.org/fight-dirty-energy/amazon-build-cleaner-cloud/coal-why-it-dirty).
+ - The p value is 4.151938e-51 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of Coal in electric power is different from 2010-2020 period to 2020-2030 period. As renewable and other more efficient energy source being used, from the graph in previous question, we can seethe use of coal decline in electric power which contributing much lesser in energy emission. This is a good news because the coal-fired power plants release more greenhouse gases per unit of energy produced than any other electricity source (according to https://www.greenamerica.org/fight-dirty-energy/amazon-build-cleaner-cloud/coal-why-it-dirty).
 
+#### Test the hypothesis that the mean energy use from Petroleum in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
+
+$$
+H_0: P_a = P_b
+$$
+
+$$
+H_a:  P_a \neq P_b
+$$
+```{r echo=FALSE}
+x1_p <- p_c %>%
+  filter(range == "2010") %>%
+  pull(MmtCO2e)
+x2_p <- p_c %>%
+  filter(range == "2020") %>%
+  pull(MmtCO2e)
+t.test(x1_p,x2_p)
+mean_diff_p <- mean(x1_p) - mean(x2_p)
+dof_p <- 15.664 ## from t.test() above
+se_p <- sqrt(sd(x1_p)^2/length(x1_p) + sd(x2_p)^2/length(x2_p))
+ci_5_p <- mean_diff_p + c(-1,1)*qt(0.975,dof_p)*se_p
+```
 
 
 
