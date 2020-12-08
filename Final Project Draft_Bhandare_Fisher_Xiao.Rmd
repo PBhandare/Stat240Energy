@@ -588,16 +588,31 @@ grid.arrange(q82011,q82015,q82020)
 ```{r,echo = FALSE}
 Actual2019 = C2020B %>% 
     filter(Year == 2019) %>% 
-  filter(Sector == "Residential" | Sector == "Industrial" | Sector == "Transportation" |  Sector == "Electric Power ")
+  filter(Sector == "Residential" | Sector == "Industrial" | Sector == "Transportation" |  Sector == "Electric Power ") %>%
+  mutate(yearFrom = "2019")
 
 Prediction2015 = C2015B %>% 
         filter(Year == 2019) %>% 
-  filter(Sector == "Residential" | Sector == "Industrial" | Sector == "Transportation" |  Sector == "Electric Power ")
+  filter(Sector == "Residential" | Sector == "Industrial" | Sector == "Transportation" |  Sector == "Electric Power ") %>%
+  mutate(yearFrom = "2015")
 
 Prediction2011 = C2011 %>% 
        filter(Year == 2019) %>% 
-  filter(Sector == "Residential" | Sector == "Industrial" | Sector == "Transportation" |  Sector == "Electric Power ")
+  filter(Sector == "Residential" | Sector == "Industrial" | Sector == "Transportation" |  Sector == "Electric Power ") %>%
+  mutate(yearFrom = "2011")
 
+predictions_actual <- bind_rows(Actual2019, Prediction2015, Prediction2011) %>%
+  group_by(yearFrom)
+
+ggplot(predictions_actual, aes(x = Sector, y = quads, fill = yearFrom)) +
+  geom_col(position = "dodge", alpha = 0.5)+
+  ggtitle("Actual Values For Year 2019", subtitle ="From AEO 2020")+
+  ylab("Energy Consumption(Quads)")+
+  xlab("Sector")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  ylim(0,50)
+```
+```{r}
 ggplot(Actual2019, aes(x = reorder(Sector, -quads), quads))+
     geom_col(fill = "lightblue")+
   ggtitle("Actual Values For Year 2019", subtitle ="From AEO 2020")+
