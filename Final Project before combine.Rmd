@@ -125,7 +125,7 @@ EnergyUseStat2020 = C2020B %>%
   
   In order to accomplish our goal of identifying if the US is reducing emissions, we will compare the prediction of energy use for the year 2020 obtained from the 2010 and 2015 AEO Reports against the actual data from 2020. Also, we will look at individual energy sources and sectors to better understand how these overall changes are being influence by sector level changes.
   
-  Thesis:
+  There are 3 focuses for our study, the first is how the most used energy source and sector changes throughout the decade and the reason behind the changes. As the technology and concept of environmental fredinliness, we think the main energy source used in emission and consumption will become cleaner and more efficient. The second is how the total consumption and the total emission changed throughout the decades. We think that the efficiency of the energy use will be better and the total consumption and emission will decrease or become more environmental friendly. The third is that how does the prediction based on the previous dataset compare to the later dataset as we are using the datas from a 10-year period. We think that some of the prediction will have major changes because of the changes in main energy source and other factors. 
 
 # Background
 
@@ -395,25 +395,24 @@ BySourceTotal2020 = E2020B %>%
 
 ### Which fuel source is the greatest contribuer to emmisions?
 ```{r,echo = FALSE}
-
-fuel2010 = ggplot(BySourceTotal2010, aes(x= Source, y = MmtCO2e, fill = Source))+
+fuel2011 = ggplot(BySourceTotal2011, aes(x= Source, y = MmtCO2e, fill = Source))+
     geom_col()+
     ggtitle("Total Emmisions By Fuel Source: 2010")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Fuel Source")
-fuel2014 = ggplot(BySourceTotal2014, aes(Source,MmtCO2e, fill = Source))+
+fuel2015 = ggplot(BySourceTotal2015, aes(Source,MmtCO2e, fill = Source))+
     geom_col() +
     ggtitle("Total Emmisions By Fuel Source: 2014")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Fuel Source")
 
-fuel2019 = ggplot(BySourceTotal2019, aes(Source,MmtCO2e, fill = Source))+
+fuel2020 = ggplot(BySourceTotal2020, aes(Source,MmtCO2e, fill = Source))+
     geom_col()+
     ggtitle("Total Emmisions By Fuel Source: 2019")+
     ylab("Emissions(MmtCO2e)")+
     xlab("Fuel Source")
 
-grid.arrange(fuel2010,fuel2014,fuel2019)
+grid.arrange(fuel2011,fuel2015,fuel2020)
 
 
 ```
@@ -421,7 +420,7 @@ grid.arrange(fuel2010,fuel2014,fuel2019)
  - From the graph above, we noticed that the use of Coal declines drastically from 2010 to 2020, and relate it back to the drastic decline in electric power emission and the industrial emission from the previous question. We now look into the major sector using Coal. The sector of electric power and the industrial are the major sector using coal which can explain the declines in them within 2010-2020 period. As the us of coal decreases, the proportion of energy emission in these two sector declines also.
 
 
-```{r}
+```{r echo=FALSE}
 all_4 = bind_rows(E2011A,E2011A,E2011A)%>%
   filter(Source == "Coal")%>%
    filter(Sector != "Total by Fuel" & Sector != "TotalbyFuel") %>%
