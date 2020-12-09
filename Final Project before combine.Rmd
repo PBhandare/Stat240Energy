@@ -125,7 +125,7 @@ EnergyUseStat2020 = C2020B %>%
   
   In order to accomplish our goal of identifying if the US is reducing emissions, we will compare the prediction of energy use for the year 2020 obtained from the 2010 and 2015 AEO Reports against the actual data from 2020. Also, we will look at individual energy sources and sectors to better understand how these overall changes are being influence by sector level changes.
   
-  There are 3 focuses for our study, the first is how the most used energy source and sector changes throughout the decade and the reason behind the changes. As the technology and concept of environmental fredinliness, we think the main energy source used in emission and consumption will become cleaner and more efficient. The second is how the total consumption and the total emission changed throughout the decades. We think that the efficiency of the energy use will be better and the total consumption and emission will decrease or become more environmental friendly. The third is that how does the prediction based on the previous dataset compare to the later dataset as we are using the datas from a 10-year period. We think that some of the prediction will have major changes because of the changes in main energy source and other factors. 
+  There are 3 focuses for our study, the first is how the most used energy source and sector changes throughout the decade and the reason behind the changes. As the technology and concept of environmental friendliness, we think the main energy source used in emission and consumption will become cleaner and more efficient. The second is how the total consumption and the total emission changed throughout the decades. We think that the efficiency of the energy use will be better and the total consumption and emission will decrease or become more environmentally friendly. The third is that how does the prediction based on the previous dataset compare to the later dataset as we are using the datas from a 10-year period. We think that some of the predictions will have major changes because of the changes in main energy sources and other factors. 
 
 # Background
 
@@ -461,6 +461,8 @@ ggplot(p_c, aes(x=log10(MmtCO2e),color=range)) +
           subtitle="early = 2010-2020, recent = 2020-2030") +
   theme_bw()
 ```
+
+
 ##### Test the hypothesis that the mean energy use from Petroleum in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
 
 $$
@@ -492,7 +494,7 @@ tstat_p <- mean_diff_p/se_p
 ## pvalue
 pt(-abs(tstat_p), dof_p) + pt(abs(tstat_p), dof_p, lower.tail=FALSE)
 ```
- - The p value is 2.720731e-064 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of petroleum is different from 2010-2020 period to 2020-2030 period. 
+ - The p value is 2.720731e-064 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of petroleum is different from 2010-2020 period to 2020-2030 period. Looking at the mean of two dataset, we can see a clear increase in usage of Petroleum. 
  
 #### Coal
 
@@ -522,14 +524,16 @@ ggplot(c, aes(x=log10(MmtCO2e),color=range)) +
           subtitle="early = 2010-2020, recent = 2020-2030") +
   theme_bw()
 ```
+
+
 #### Test the hypothesis that the mean energy use from Coal in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
 
 $$
-H_0: P_a = P_b
+H_0: C_a = C_b
 $$
 
 $$
-H_a:  P_a \neq P_b
+H_a:  C_a \neq C_b
 $$
 ```{r echo=FALSE}
 x1_c <- c %>%
@@ -546,7 +550,8 @@ dof_c <- 76.249 ## from t.test() above
 se_c <- sqrt(sd(x1_c)^2/length(x1_c) + sd(x2_c)^2/length(x2_c))
 ci_5_c <- mean_diff_c + c(-1,1)*qt(0.975,dof_c)*se_c
 ```
- - The p value is 0.0005189996 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of Coal  is different from 2010-2020 period to 2020-2030 period. As renewable and other more efficient energy source being used, from the graph in previous question, we can seethe use of coal decline which contributing much lesser in energy emission. This is a good news because the coal-fired power plants release more greenhouse gases per unit of energy produced than any other electricity source (according to https://www.greenamerica.org/fight-dirty-energy/amazon-build-cleaner-cloud/coal-why-it-dirty).
+ - The p value is 0.0005189996 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of Coal  is different from 2010-2020 period to 2020-2030 period. 
+ - Looking at the mean of two dataset, we can see a clear decline in usage of Coal. As renewable and other more efficient energy source being used, from the graph in previous question, we can seethe use of coal decline which contributing much lesser in energy emission. This is a good news because the coal-fired power plants release more greenhouse gases per unit of energy produced than any other electricity source (according to https://www.greenamerica.org/fight-dirty-energy/amazon-build-cleaner-cloud/coal-why-it-dirty).
 
 
 
@@ -723,6 +728,8 @@ ggplot(sectormostconsume2020, aes(Sector, quads, fill = Source) ) +
     xlab("Sector")+
     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
+
+
  - From the graphs above, we can clearly see that the delivered energy is the most used energy source in all three datasets.
 
 ## **(7)Which sector has the highest growth rate for each fuel source?**
@@ -814,6 +821,8 @@ ggplot(highgrowthrate,aes(Year,GrowthRate, fill = Source))+
   scale_x_discrete()
 
 ```
+
+
 The Coal-to-Liquids Heat and Power have the highest growth rate in 2010 which matches the high porportion of coal in energy emission, in year 2015, compressed/liquified natural gas have the highest rate of growth and hydrogen have the highest rate of growth. Looking at the changes in rate of growth trhoughout the decase, we noticed that the use of energy source that is growing the most become cleaner and more efficient.
 
 
@@ -976,6 +985,9 @@ grid.arrange(AA,BB,CC,DD, nrow= 2, ncol=2)
 
 
 ### Discussion
+
+
+ - Based on the data analysis, we can see some major changes in the use of energy source throughout this 10-year period. The first change we noticed is that the proportion of coal usage declined drastically from 2010 to 2020 data. Because of the decline in usage of coal, the emission of the industrial and electric power sector declined as well. We also compute a hypothesis test to see whether the proportion of the usage of petroleum and coal changes. This is a very good sign because coal combustion releases the greenhouse gases carbon dioxide (CO2) and nitrous oxide (N2O) during combustion which will significantly damaged our environment. And now we are mainly using cleaner and more efficient energy such as hydrogen and petroleum which will produce lesser energy emission. This matches with the improvement of energy efficiency we see looking at the total consumption and emission together within this 10-year period. 
 
 
 
