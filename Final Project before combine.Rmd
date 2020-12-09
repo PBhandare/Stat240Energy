@@ -1,0 +1,980 @@
+---
+title: "An Analysis of US Enenrgy Related Consumption and Emmisions Data"
+author: "Lindsey Fisher,Param Bhandare,Yunqing Xiao"
+date: "12/8/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+library(patchwork)
+library(forcats)
+# source("viridis.R")
+# source("ggprob.R")
+library(gridExtra)
+library(gt)
+```
+
+
+```{r, include=FALSE}
+E2011 =read_csv("emissions2011.csv")
+C2011 = read_csv("consumption2011.csv")
+E2015 = read_csv("emissions2015.csv")
+C2015 = read_csv("consumption2015.csv")
+E2020 = read_csv("emissions2020.csv")
+C2020 = read_csv("consumption2020.csv")
+
+E2011 = E2011 %>% 
+    pivot_longer(
+   cols = c(3:30),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "MmtCO2e",
+   values_drop_na = TRUE) 
+    
+E2011A = E2011 %>%
+mutate(Year = as.numeric(as.character(unlist(E2011$Year))),
+       GrowthRate = as.numeric(sub("%"," ",E2011$`Growth Rate (2009-2035)`))) %>% 
+select(Year, Sector, Source, MmtCO2e,GrowthRate) %>% 
+    filter(Sector != "NA")
+
+C2011 = C2011 %>%
+    pivot_longer(
+   cols = c(3:30),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "quads",
+   values_drop_na = TRUE)
+
+C2011 = C2011 %>% 
+mutate(Year = as.numeric(as.character(unlist(C2011$Year))),
+       GrowthRate = as.numeric(sub("%"," ",C2011$`Growth Rate (2009-2035)`))) %>% 
+  filter(Sector != "Energy Use and Related Statistics	") %>% 
+select(Year, Sector, Source, quads,GrowthRate) 
+
+
+E2015 = E2015 %>% 
+    pivot_longer(
+        cols = c(3:31),
+        names_to = "Year",
+        names_prefix = "Year",
+        values_to = "MmtCO2e",
+        values_drop_na = TRUE
+    )
+E2015A = E2015 %>%    
+    mutate(Year = as.numeric(as.character(unlist(E2015$Year)))) %>%
+    filter(Sector != "NA")
+    
+C2015A = C2015 %>%
+    pivot_longer(
+        cols = c(3:31),
+        names_to = "Year",
+        names_prefix = "Year",
+        values_to = "quads",
+        values_drop_na = TRUE
+    )
+    
+C2015B = C2015A %>% 
+    mutate(Year = as.numeric(as.character(unlist(C2015A$Year))),
+       GrowthRate = as.numeric(sub("%","",C2015A$`Growth (2013-2040)`))) %>% 
+         select(Year, Sector,Source, quads, GrowthRate)
+
+E2020A = E2020 %>% 
+    pivot_longer(
+   cols = c(3:34),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "MmtCO2e",
+   values_drop_na = TRUE)
+    
+E2020B = E2020A %>%    
+mutate(Year = as.numeric(as.character(unlist(E2020A$Year)))) %>% 
+filter(Sector != "NA")
+
+C2020A = C2020 %>%
+    pivot_longer(
+   cols = c(3:34),
+   names_to = "Year",
+   names_prefix = "Year",
+   values_to = "quads",
+   values_drop_na = TRUE)
+
+C2020B = C2020A %>% 
+mutate(Year = as.numeric(as.character(unlist(C2020A$Year))),
+       GrowthRate = as.numeric(sub("%","",C2020A$`Growth (2019-2050)`))) %>% 
+    select(Year, Sector, Source, quads,GrowthRate) 
+
+EnergyUseStat2020 = C2020B %>% 
+  filter(Sector == "Energy Use & Related Statistics" | Source == "Carbon Dioxide Emissions (million metric tons carbon dioxide)")
+
+```
+
+
+
+# Introduction
+
+  Our group was interested in looking at an environmentally related issue as green energy and climate change is a hot topic for debate currently. We will use this report to analyze United States energy consumption and emissions data.We are using energy measurements provided by the Annual Energy Outlook (AEO) report which is published each year by the the US Energy Information Administration. We chose to look at  AEO reports published in 2011, 2015 and 2020 since they within one decade and we will be able to compare across these years to see im we have reduced emissions and consumption overall in the past decade.
+  
+  For this report we will visually explore relationships between energy data metrics while also looking at our progress as a country for reducing emissions and consumption overall. We believe there may be interesting relationships between variables as well as among variables from separate data sets to be uncovered through visual analysis and modeling. We are interested in relationships between the variables such as: Industry Sector, Fuel Source, Emissions, and Consumption metircs within each of the data sets as well as comparing the variables across the separate years to look for trends.
+  
+  We will use this analysis to locate key areas where the US is suceeding at reducing emissions and areas where we need to improvement. We will assess the validity of the AEOs projections by comparing the future projections from the 2010 and 2015 reports to the observed measures supplied by the 2020 report. 
+  
+  In order to accomplish our goal of identifying if the US is reducing emissions, we will compare the prediction of energy use for the year 2020 obtained from the 2010 and 2015 AEO Reports against the actual data from 2020. Also, we will look at individual energy sources and sectors to better understand how these overall changes are being influence by sector level changes.
+  
+  Thesis:
+
+# Background
+
+The data was collected by the U.S Environmental Information Administration and is published on their website (https://www.eia.gov/outlooks/aeo/data) for public viewing. The projections were made using the AEO National Energy Modeling System. 
+ 
+**Emissions Data:**
+
+The emissions data measures outputs into the atmosphere in units of Million Metric Ton CO2 Equivalents. This is a measure of global warming potential. CO2 is a well know gas that traps heat in the atmosphere, however, there are other gasses which trap heat at a much higher magnitude. The measurement is called CO2 equivalents because it measures the amount of total global warming potential as a factor of the magnitude of one CO2 molecules warming potential. 
+
+Variables: 
+
+*Sectors* 
+Includes Residential, Industrial, Transportation, Commercial, Electric Power
+
+*Fuel Source: *
+which source of energy contribute to the energy use
+
+*Year: *
+the year where the data come from
+
+*Growth Rate: *
+the rate of growth in percentage
+
+*MmtCo2e:*
+Emissions measured in units of Million metric tons of Carbon Dioxide Equivalents
+
+**Consumption Data:**
+
+The consumption data measures how much energy was used in units of Quads. A Quad is a unit of energy equal to 10¹⁵ British Thermal Units, or 1.055 × 10¹⁸ joules in SI units. The US Department of Energy adopted the use of quads as their unit of energy use measurement for national and international reports.  The consumption data reports energy consumption by sector and power source. Sectors include residential, commercial, industrial, transportation, electric power, and delivered energy. The energy sources for consumption are more complex and vary with in each sector. 
+ 
+Variables: 
+
+*Sectors* 
+Includes Residential, Industrial, Transportation, Commercial, Electric Power
+
+*Fuel Source: *
+which source of energy contribute to the energy use
+
+*Year: *
+the year where the data come from
+
+*Growth Rate: *
+the rate of growth in percentage
+
+*Quads:*
+A Quad is a unit of energy equal to 10¹⁵ British Thermal Units, or 1.055 × 10¹⁸ joules in SI units. 
+
+
+We choose these data because they clearly presents the different meausres for emission and consumption of energy with labeled year, sector(the area that energy is being used) and source of energy. Thus, in order to see whether the US is doing well in reducing emissions and consumption and areas where we need to focus on improvement, we need to use these information to analyze and discuss about the energy performance in the US. 
+ 
+ 
+The energy used in the consumption data are measure by MmtCO2e (Million Metric Ton CO2) which is a common unit for measuring the energy emission and consumption. The energy used in the emission data are meausred by quads. These datasets divided the energy by its sector and source which makes the anlysis easier because we can look at different energy sector and source separately to see which of them contribute the most in the increasing of emission and consumption of energy and which of them reduced the most. Also, we choose to use the data within a 10-year period because not only the common energy source and how energy is used are similar within 10 year, but also because we can track the changes in different variables closely in a shorter period and time and compare the actual changes in 10 years with our prediction from the previous dataset.
+
+
+
+### Analysis
+
+
+## **(1) How do total emissions vary by year?**
+
+
+
+ - We first compare the total energy emissions between each dataset, the intersecting red lines allow us to compare total emissions for 2020 as predicted by each AEO report.
+ - These graphics show that actual total emissions in 2020 is much lesser than the predicted total emissions by the 2011 outlook & 2015 outlook reports. 
+
+
+```{r,echo = FALSE}
+
+total_2011 = E2011A %>% 
+    filter(Source == "Total" & Sector == "TotalbyFuel") %>% 
+    arrange(Year)
+
+sourcetopn_2011 = E2011A %>% 
+    filter(!str_detect(Sector,"Total by Fuel")) %>% 
+    filter(!str_detect(Source, "Total"))%>%
+  filter(Year == 2010) %>% 
+    slice_max(order_by = MmtCO2e, n = 1)
+
+totalE2015 = E2015A %>% 
+    filter(Source == "Total") %>% 
+    arrange(Year)
+
+sourcetopn2015 = E2015A %>% 
+    filter(!str_detect(Sector,"Total by Fuel")) %>% 
+    filter(!str_detect(Source, "Total"))%>%
+    filter(Year == 2014)%>% 
+    slice_max(order_by = MmtCO2e, n = 1)
+
+totalE2020 = E2020B %>% 
+filter(Source == "Total") %>% 
+arrange(Year)
+
+sourcetopn2020 = E2020B %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
+  filter(Year == 2019) %>% 
+    slice_max(order_by = MmtCO2e, n = 1)
+
+```
+
+
+```{r,echo = FALSE}
+etotal2011 = ggplot(total_2011,aes(Year,MmtCO2e))+
+    stat_smooth(se = FALSE)+
+    geom_point()+
+    ggtitle("2011 Data")+
+    ylab(" Total Emissions(MmtCO2e)")+
+    xlab("Year")+
+    ylim(4500,6500)+
+    geom_vline(xintercept = 2020,  color = "red")+
+    geom_hline(yintercept = 5777, color = "red")
+
+etotal2015 = ggplot(totalE2015, aes(Year,MmtCO2e)) +
+    stat_smooth(se= FALSE) +
+    geom_point()+
+    ggtitle("2015 Data")+
+    ylab(" Total Emissions(MmtCO2e)")+
+    xlab("Year")+
+    ylim(4500,6500)+
+    geom_vline(xintercept = 2020,  color = "red")+
+    geom_hline(yintercept = 5499.3, color = "red")
+
+etotal2020 = ggplot(totalE2020,aes(Year,MmtCO2e))+
+    stat_smooth(se = FALSE)+
+    geom_point()+
+    ggtitle("2020 Data")+
+    ylab("Total Emissions(MmtCO2e)")+
+    xlab("Year")+
+    ylim(4500,6500)+
+    geom_vline(xintercept = 2020,  color = "red")+
+    geom_hline(yintercept = 4993, color = "red")
+
+grid.arrange(etotal2011,etotal2015,etotal2020, ncol = 3)
+
+```
+
+## **(2) Which fuel source is the greatest emissions contributer per year? How many million metric tons of CO2e are output by the greatest contributer?**
+
+ - Now we are trying to look at which energy source contribute to the emission the most.  
+ - From the graph, petroleum is the fuel source that has contributed most to emissions over all three reports. 
+ - When comparing 2010 to 2019 we can see a decrease in overall emissions from petrolem. 
+
+
+```{r,echo = FALSE}
+
+etop2011 = ggplot(sourcetopn_2011, aes(Source, MmtCO2e))+
+    geom_col(fill = "blue")+
+    ggtitle("2010")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Source")+
+    ylim(0,2500)   
+
+etop2015 = ggplot(sourcetopn2015, aes(Source, MmtCO2e))+
+    geom_col(fill = "blue")+
+    ggtitle("2014")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Source")+
+    ylim(0,2500)
+  
+    
+etop2020 = ggplot(sourcetopn2020, aes(Source, MmtCO2e))+
+    geom_col(fill = "blue")+
+    ggtitle("2019")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Source")+
+    ylim(0,2500)
+
+
+grid.arrange(etop2011,etop2015,etop2020, ncol = 3)
+
+```
+
+## **(3)Which sector produces the most emissions? Does this vary by which year the outlook report is pulished?**
+
+ - Transportation and electric power produced the most emission in all three datasets.
+ - The order of sectors, highest emiiting to lowest emitting sectors, is the same for the year 2010 and 2019 although there are some slight fluxuations in the ammount of emissions produced by each sector. 
+  - Although, we noticed that the transportation emissions are more stable than the electric power emission as it drastically declined in the 2020 data.
+  - The porportion of industrial emission declined throughout the year. 
+
+
+
+```{r,echo = FALSE}
+sectormost2011A = E2011A %>% 
+ filter(Source != "Total" & Sector != "TotalbyFuel") %>% 
+    group_by(Year, Sector) %>% 
+    top_n(MmtCO2e, n = 1)
+    
+sectormost2015A = E2015A %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel") %>%
+    filter(Sector != "Carbon Dioxide Emissions") %>%
+    group_by(Year, Sector) %>% 
+    top_n(MmtCO2e, n = 1)
+sectormost2020A = E2020B %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel") %>% 
+    group_by(Year, Sector) %>% 
+    top_n(MmtCO2e, n = 1)
+```
+
+
+```{r,echo = FALSE}
+sectormost2011B = E2011A %>% 
+     filter(Source != "Total" & Sector != "TotalbyFuel", Year == 2009) %>% 
+    group_by(Sector) %>% 
+    slice_max(order_by = MmtCO2e, n = 1) %>% 
+    arrange(desc(MmtCO2e)) %>% 
+select(Sector, MmtCO2e) 
+
+
+sectormost2015B = E2015A %>% 
+    filter(Source != "Total" & Sector != "Total by Fuel", Year == 2013 & Sector != "Carbon Dioxide Emissions") %>% 
+    group_by(Sector) %>% 
+    top_n(MmtCO2e, n = 1) %>%
+        arrange(desc(MmtCO2e)) %>% 
+    select(Sector, MmtCO2e) 
+
+sectormost2020B = E2020B %>% 
+     filter(Source != "Total" & Sector != "Total by Fuel", Year == 2019) %>% 
+    group_by(Sector) %>% 
+    top_n(MmtCO2e, n = 1) %>%
+        arrange(desc(MmtCO2e)) %>% 
+    select(Sector,MmtCO2e) 
+   
+
+
+SM2011B = ggplot(sectormost2011B, aes(x = reorder(Sector, -MmtCO2e),y = MmtCO2e,fill = Sector))+
+    geom_col()+
+  xlab("Sector")+
+    ylim(c(0,2200))
+SM2015B = ggplot(sectormost2015B, aes(x = reorder(Sector, -MmtCO2e),y = MmtCO2e,fill = Sector))+
+    geom_col()+
+  xlab("Sector")+
+    ylim(c(0,2200))
+SM2020B = ggplot(sectormost2020B, aes(x = reorder(Sector, -MmtCO2e),y = MmtCO2e,fill = Sector))+
+    geom_col()+
+  xlab("Sector")+
+    ylim(c(0,2200))
+
+grid.arrange(SM2011B, SM2015B, SM2020B,nrow = 3)
+
+```
+
+
+## **(4)Looking at total emissions by fuel source, which is the greatest contributor? Which fuel source has the greatest projected consumption?**
+
+
+```{r,echo = FALSE}
+total_source_2011 <- E2011A %>%
+    filter(!str_detect(Source, "Total"))%>%
+    group_by(Source)%>%
+    summarize(total_emission = sum(MmtCO2e)) %>%
+    arrange(desc(total_emission))
+
+BySourceTotal2011 <- E2011A %>%
+    filter(Sector == "TotalbyFuel" & Source != "Total" )
+
+ 
+
+
+BySourceTotal2015 = E2015A %>% 
+    filter(Sector == "Total by Fuel" & Source != "Total" )
+
+
+
+BySourceTotal2020 = E2020B %>% 
+    filter(Sector == "Total by Fuel"  & Source != "Total" )
+
+```
+
+### Which fuel source is the greatest contribuer to emmisions?
+```{r,echo = FALSE}
+
+fuel2010 = ggplot(BySourceTotal2010, aes(x= Source, y = MmtCO2e, fill = Source))+
+    geom_col()+
+    ggtitle("Total Emmisions By Fuel Source: 2010")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Fuel Source")
+fuel2014 = ggplot(BySourceTotal2014, aes(Source,MmtCO2e, fill = Source))+
+    geom_col() +
+    ggtitle("Total Emmisions By Fuel Source: 2014")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Fuel Source")
+
+fuel2019 = ggplot(BySourceTotal2019, aes(Source,MmtCO2e, fill = Source))+
+    geom_col()+
+    ggtitle("Total Emmisions By Fuel Source: 2019")+
+    ylab("Emissions(MmtCO2e)")+
+    xlab("Fuel Source")
+
+grid.arrange(fuel2010,fuel2014,fuel2019)
+
+
+```
+
+ - From the graph above, we noticed that the use of Coal declines drastically from 2010 to 2020, and relate it back to the drastic decline in electric power emission and the industrial emission from the previous question. We now look into the major sector using Coal. The sector of electric power and the industrial are the major sector using coal which can explain the declines in them within 2010-2020 period. As the us of coal decreases, the proportion of energy emission in these two sector declines also.
+
+
+```{r}
+all_4 = bind_rows(E2011A,E2011A,E2011A)%>%
+  filter(Source == "Coal")%>%
+   filter(Sector != "Total by Fuel" & Sector != "TotalbyFuel") %>%
+  group_by(Sector)%>%
+  summarize(sum = sum(MmtCO2e))
+  
+ggplot(all_4, aes(Sector,sum))+
+    geom_col()+
+  ggtitle("Major Sector using Coal")
+```
+
+### How does the use of Petroleum and Coal changed from 2010-2019 period to 2020-2030 period?
+
+#### Petroleum
+
+ - From the previous table, we can see that Petroleum is a main source of energy contributing to the energy emission. As the technology and use of energy changed and developed throughout the decase, we are interested in how the use of petroleum changes in the sector of transportation.  From the previous problem, we can see that the main sector uses petroleum is in transportation. We now want to compare the result within 1 dacades to see whether the mean use of Coal for emission changes significantly.
+
+```{r echo=FALSE}
+p_c2011 = E2011A%>%
+    filter(Source == "Petroleum" )
+p_c2020 = E2020B%>%
+    filter(Source == "Petroleum" )
+p_c = bind_rows(p_c2011,p_c2020)%>%
+    # filter(Sector == "Transportation")%>%
+    mutate(range = case_when(Year < 2020 ~ "2010",
+                     Year >= 2020 ~ "2020"))
+sum_PC = p_c%>%
+    group_by(range)%>%
+    summarize(n = n(),
+              sum_MmtCO2e = sum(MmtCO2e),
+              mean = mean(sum_MmtCO2e),
+              sd = sd(MmtCO2e))
+ggplot(p_c, aes(x=log10(MmtCO2e),color=range)) +
+  geom_density() +
+  xlab("MmtCO2e(log10)") +
+  ylab("Density") +
+  ggtitle("Mean source of energy in Emission (MmtCO2e)",
+          subtitle="early = 2010-2020, recent = 2020-2030") +
+  theme_bw()
+```
+##### Test the hypothesis that the mean energy use from Petroleum in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
+
+$$
+H_0: P_a = P_b
+$$
+
+$$
+H_a:  P_a \neq P_b
+$$
+```{r echo=FALSE}
+x1_p <- p_c %>%
+  filter(range == "2010") %>%
+  pull(MmtCO2e)
+x2_p <- p_c %>%
+  filter(range == "2020") %>%
+  pull(MmtCO2e)
+
+t.test(x1_p,x2_p)
+mean_diff_p <- mean(x1_p) - mean(x2_p)
+dof_p <- 153.18 ## from t.test() above
+se_p <- sqrt(sd(x1_p)^2/length(x1_p) + sd(x2_p)^2/length(x2_p))
+ci_5_p <- mean_diff_p + c(-1,1)*qt(0.975,dof_p)*se_p
+```
+
+
+ - Now, using the mean and se generated from the previous t-test, we now are able to verify the p value by calculating the test statstistics.
+```{r echo=FALSE}
+tstat_p <- mean_diff_p/se_p
+## pvalue
+pt(-abs(tstat_p), dof_p) + pt(abs(tstat_p), dof_p, lower.tail=FALSE)
+```
+ - The p value is 2.720731e-064 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of petroleum is different from 2010-2020 period to 2020-2030 period. 
+ 
+#### Coal
+
+- From the previous table, we can see that Coal is also a main source of energy contributing to the energy emission. As the technology and use of energy changed and developed throughout the decase, we are instrerested in how the use of Coal changes. We now want to compare the result within 20 dacades to see whether the mean use of Coal for emission in Electric Power changes significantly.
+```{r echo=FALSE}
+c2011 = E2011A%>%
+    filter(Source == "Coal" & Sector != "Total by Fuel")%>%
+    filter(Year < 2019)
+c2020 = E2020B%>%
+    filter(Source == "Coal" & Sector != "Total by Fuel")%>%
+    filter(Year < 2030 & Year >=2020)
+c = bind_rows(c2011,c2020)%>%
+    mutate(range = case_when(Year < 2019 ~ "2010",
+                     Year >= 2019 ~ "2020"))
+sum_C = c%>%
+    group_by(range)%>%
+    summarize(n = n(),
+              sum_MmtCO2e = sum(MmtCO2e),
+              mean = mean(sum_MmtCO2e),
+              sd = sd(MmtCO2e))
+
+ggplot(c, aes(x=log10(MmtCO2e),color=range)) +
+  geom_density() +
+  xlab("MmtCO2e(log10)") +
+  ylab("") +
+  ggtitle("Coal Use in Electric Power for Energy Emission",
+          subtitle="early = 2010-2020, recent = 2020-2030") +
+  theme_bw()
+```
+#### Test the hypothesis that the mean energy use from Coal in 2010-2020 (Pa) is equal to that in 2020-2030 period (Pb) versus that alternative that they are different. 
+
+$$
+H_0: P_a = P_b
+$$
+
+$$
+H_a:  P_a \neq P_b
+$$
+```{r echo=FALSE}
+x1_c <- c %>%
+  filter(range == "2010") %>%
+  pull(MmtCO2e)
+x2_c <- c %>%
+  filter(range == "2020") %>%
+  pull(MmtCO2e)
+```
+```{r echo=FALSE}
+t.test(x1_c,x2_c)
+mean_diff_c <- mean(x1_c) - mean(x2_c)
+dof_c <- 76.249 ## from t.test() above
+se_c <- sqrt(sd(x1_c)^2/length(x1_c) + sd(x2_c)^2/length(x2_c))
+ci_5_c <- mean_diff_c + c(-1,1)*qt(0.975,dof_c)*se_c
+```
+ - The p value is 0.0005189996 (less than 0.05 (typically ≤ 0.05)) is statistically significant. It indicates strong evidence against the null hypothesis, as there is less than a 5% probability the null is correct (and the results are random). Therefore, we reject the null hypothesis, and accept the alternative hypothesis of the mean use of Coal  is different from 2010-2020 period to 2020-2030 period. As renewable and other more efficient energy source being used, from the graph in previous question, we can seethe use of coal decline which contributing much lesser in energy emission. This is a good news because the coal-fired power plants release more greenhouse gases per unit of energy produced than any other electricity source (according to https://www.greenamerica.org/fight-dirty-energy/amazon-build-cleaner-cloud/coal-why-it-dirty).
+
+
+
+
+
+## **(5) Which sector uses the most renewables? Which uses the most non-renewables?**
+
+#### For the 2020 data we can see that the industrial sector uses the most renewables whereas the transportation sector uses the most non renewables. Comparing the 2011 data to the 2020 data we can see that there has been a significant change in the renewability of resources that the industrial sector uses. 
+
+
+```{r,echo = FALSE}
+
+C2011Renew = C2011 %>%
+    mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable", Source != "Renewable Energy" ~ "Non-Renewable")) %>%
+    filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>% 
+    group_by(Sector, RenewableResource) %>% 
+    drop_na() %>% 
+    summarise(energysum = sum(quads)) %>% 
+    arrange(desc(energysum))
+
+C2015Renew = C2015A %>%
+    slice(1:3770) %>%
+    mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable",
+                                        Source != "Renewable Energy" ~ "Non-Renewable")) %>%
+    filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    group_by(Sector, RenewableResource) %>% 
+    drop_na() %>% 
+    summarise(energysum = sum(quads)) %>% 
+    arrange(desc(energysum))
+C2020Renew = C2020B %>%
+    mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable",
+    Source != "Renewable Energy" ~ "Non-Renewable")) %>%
+    filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    group_by(Sector, RenewableResource) %>% 
+    drop_na() %>% 
+    summarise(energysum = sum(quads)) %>% 
+    arrange(desc(energysum))
+```
+
+```{r,echo = FALSE}
+renew_2011=ggplot(C2011Renew, aes(Sector, energysum))+
+    geom_col(position = "dodge", fill = "lightblue")+
+  facet_wrap(~RenewableResource)+
+    ggtitle("Most Renewables",
+            subtitle = "Based on 2011 Data")+
+     ylab("Consumptionr(quads)")+
+    xlab("Sector")+
+  ylim(0,5000)+
+   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+    
+renew_2015=ggplot(C2015Renew, aes(Sector, energysum))+
+  geom_col(position = "dodge", fill = "blue") +
+    facet_wrap(~ RenewableResource) +
+    ggtitle("Most Renewables",
+            subtitle = "Based on 2015 Data")+
+    ylab("Consumptionr(quads)")+
+    xlab("Sector")+
+  ylim(0,5000)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+  
+renew_2020 = ggplot(C2020Renew, aes(Sector, energysum))+
+    geom_col(position = "dodge", fill = "navy")+
+    facet_wrap(~RenewableResource)+
+    ggtitle("Most Renewables",
+        subtitle = "Based on 2020 Data")+
+    ylab("Consumptionr(quads)")+
+    xlab("Sector")+
+  ylim(0,5000)+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+grid.arrange(renew_2011,renew_2015,renew_2020, ncol =3)
+
+```
+ 
+ 
+ 
+ - From the graph above, we can see clear pattern that the use in industrial and Transportation is the two major sector in using non-renewable energy especially in year 2011 when non-renewable source is the major energy source for consumption. Thus, we are wondering when we are using these two sector to estimate the future energy consumption, should we look at these sector separately or we can combine them as a whole while estimating the future cumsumption for nonrenewable data.
+```{r,echo = FALSE}
+extract_lm = function(x,name)
+{
+  out = as_tibble(coef(summary(x)), rownames = "parameter") %>% 
+    rename(estimate = Estimate,
+           se = `Std. Error`,
+           t = `t value`,
+           p_value = `Pr(>|t|)`)%>%
+    select(-t,-p_value)%>%
+  pivot_wider(names_from = parameter, values_from=c(estimate,se))%>%
+  mutate(df = df.residual(x))%>%
+    mutate(sector=name)%>%
+    select(sector, everything())
+
+  return ( out )
+}
+```
+
+```{r echo=FALSE}
+ind_11 = C2011%>%
+  mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable", Source != "Renewable Energy" ~ "Non-Renewable")) %>%
+  filter(Sector == "Industrial", RenewableResource == "Non-Renewable")
+tra_11 = C2011%>%
+  mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable", Source != "Renewable Energy" ~ "Non-Renewable")) %>%
+  filter(Sector == "Transportation", RenewableResource == "Non-Renewable")
+all_11 = C2011%>%
+  mutate(RenewableResource = case_when(Source == "Renewable Energy" ~ "Renewable", Source != "Renewable Energy" ~ "Non-Renewable")) %>%
+  filter(RenewableResource == "Non-Renewable")
+tbl_ind = extract_lm(lm(quads~Year, data = ind_11),"Industrial")
+tbl_tra = extract_lm(lm(quads~Year, data = tra_11),"Transportation")
+tbl_all = extract_lm(lm(quads~Year, data = all_11),"All")
+bind_rows(tbl_ind,tbl_tra,tbl_all)
+```
+  
+  - Now, we will like to build a hypothesis test using the sector of industrial and transportation to predict the total consumption measured by quads from the year using non-reneable energy source.
+  The null hypothese will be the estimation of energy consumption based on year using the industrial data from 2011 dataset will be the same as using the transportation data from 2011 dataset. And the alternative is that the estimation based on these two sector are different.
+  
+$H_0:\ \beta_{\text{ind}} = \beta_{\text{trans}}$    
+$H_A:\ \beta_{\text{ind}} \neq \beta_{\text{trans}}$
+
+```{r,echo = FALSE}
+Test_statistics = (0.03053429-0.02977919)/sqrt((0.04911256)^2+(0.06925661)^2)
+pt(-abs(Test_statistics), (530+362)) + pt(abs(Test_statistics), (530+362), lower.tail=FALSE)
+
+```
+ 
+ Thus, from the p value of 0.992906 higher than 0.05 (> 0.05) is not statistically significant and indicates strong evidence for the null hypothesis.Looking at the slope of these two sector which are very similar to each other and the p value after the hypothesis test, we think it is reasonable to combine consumption data from Industrial and Transportation sector to estimate a common slope for a regression line that models total energy use in quads verses the year.
+ 
+ 
+## **(6) Which energy source is utilized the most in each sector?**
+
+
+#### From this graph we can conclude that electricty and delivered energy play a major role in the ammount of energy we consume across all sectors. 
+
+
+```{r,echo = FALSE}
+sector_most_2011 <- C2011 %>%
+    filter(!str_detect(Source, "Total")) %>%
+    filter(Year == "2011") %>%
+    filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    group_by(Sector) %>%
+    slice_max(order_by = quads, n = 1)
+
+sectormostconsume2015 = C2015B %>%
+    slice(1:3770) %>%
+    filter(Source != "Total" & Year == 2015) %>% 
+    filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    group_by(Sector) %>%
+    slice_max(order_by = quads, n = 1)
+sectormostconsume2020 = C2020B %>%
+    filter(Source != "Total" & Year == 2019) %>% 
+    filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    group_by(Sector) %>%
+    slice_max(order_by = quads, n = 1)
+```
+
+```{r,echo = FALSE}
+ggplot(sector_most_2011, aes(Sector, quads, fill = Source) ) + 
+    geom_col()+
+    facet_wrap( ~ Year, nrow = 1) +
+    ggtitle("Which Fuel Source is Utilized Most in Each Sector in 2011?")+
+    ylab("Energy Consumption per Sector(quads)")+
+    xlab("Sector")+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggplot(sectormostconsume2015, aes(Sector, quads, fill = Source) ) + 
+    geom_col()+
+    facet_wrap( ~ Year, nrow = 1) +
+    ggtitle("Which Fuel Source is Utilized Most in Each Sector in 2015?")+
+    ylab("Energy Consumption per Sector(quads)")+
+    xlab("Sector")+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggplot(sectormostconsume2020, aes(Sector, quads, fill = Source) ) + 
+    geom_col()+
+    facet_wrap( ~ Year, nrow = 1) +
+    ggtitle("Which Fuel Source is Utilized Most in Each Sector in 2020?")+
+    ylab("Energy Consumption per Sector(quads)")+
+    xlab("Sector")+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+ - From the graphs above, we can clearly see that the delivered energy is the most used energy source in all three datasets.
+
+## **(7)Which sector has the highest growth rate for each fuel source?**
+
+ - the indsurtial sector has the highest growth rate for Coal-to-Liquids Heat and Power within all the dataset as well as the transportation also have relatively high growth rate in many different sectors.
+
+ - This graph shows how we have transitioned from coal power, to natural gas, and how we are currently growing into new methods to supply our energy such as hydrogen fuel sources. 
+
+
+```{r,echo = FALSE}
+ratesector2011 = C2011 %>%
+    filter(Year == 2011) %>% 
+filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    group_by(Sector, Year) %>%
+    slice_max(order_by = GrowthRate, n = 1) %>%
+    arrange(desc(GrowthRate)) %>%
+    select(Sector, Source, GrowthRate,Year)%>%
+    group_by(Source) %>%
+    slice_max(order_by = GrowthRate, n = 1)
+
+ratesector2015 = C2015B %>%
+    slice(1:3770) %>%
+    filter(Year == 2014) %>% 
+filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    group_by(Sector, Year) %>% 
+    slice_max(order_by = GrowthRate, n = 1) %>% 
+    arrange(desc(GrowthRate)) %>%
+    select(Sector, Source, GrowthRate,Year)%>%
+    group_by(Source) %>%
+    slice_max(order_by = GrowthRate, n = 1)
+ratesector2020 = C2020B %>%
+    filter(Year == 2019) %>% 
+filter(Sector == "Comericial" | Sector == "Industrial" | Sector == "Residential" | Sector == "Transportation") %>%
+    group_by(Sector, Year) %>% 
+    slice_max(order_by = GrowthRate, n = 1) %>% 
+    arrange(desc(GrowthRate)) %>% 
+    select(Sector,Source,GrowthRate,Year)%>%
+    group_by(Source) %>%
+    slice_max(order_by = GrowthRate, n = 1)
+ratesector = bind_rows(ratesector2011,ratesector2015,ratesector2020)
+```
+
+```{r,echo = FALSE}
+ggplot(ratesector, aes(Source, GrowthRate, fill= Sector) ) +
+    geom_col()+
+    facet_wrap( ~ Year, nrow = 1) + 
+    ggtitle("Which sector has the highest growth rate for each fuel source?")+
+    ylab("Growth Rate(%)")+
+    xlab("Source")+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+
+## **(8) Which energy source has the highest growth rate over all?**
+
+
+
+```{r,echo = FALSE}
+ratesource2011 = C2011 %>%
+    filter(Year == 2011 & Sector != "NA") %>% 
+    filter(Sector == "Residential" | Sector == "Industrial" | Sector == "Transportation" | Sector == "Comericial" | Sector == "Delivered Energy Consumption" | Sector == "Electric Power ") %>% 
+    select(Source,Sector,GrowthRate,Year)%>%
+    slice_max(order_by = GrowthRate, n = 1)
+
+ratesource2015 = C2015B %>%
+    filter(Year == 2015 & Sector != "NA" & 
+               Sector != "Unspecified Sector" & 
+               Sector != "Energy Use & Related Statistics") %>% 
+    slice_max(order_by = GrowthRate, n = 1) %>%
+    select(Source,Sector,GrowthRate,Year)
+
+ratesource2020 = C2020B %>%
+    filter(Year == 2020 & Sector != "NA" & Sector != "Unspecified Sector"& Sector != "Energy Use & Related Statistics") %>% 
+    slice_max(order_by = GrowthRate, n = 1) %>%
+    select(Source,Sector,GrowthRate,Year)
+
+highgrowthrate = bind_rows(ratesource2011,ratesource2015,ratesource2020)
+
+ggplot(highgrowthrate,aes(Year,GrowthRate, fill = Source))+
+    geom_col()+
+     theme(
+  # Hide panel borders and remove grid lines
+  panel.border = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  # Change axis line
+  axis.line = element_line(colour = "black"))+
+    annotate("text", x=c(2011,2015,2020), y=5, label = c("2011","2015","2020"), color = "black", size = 5)+
+  scale_x_discrete()
+
+```
+The Coal-to-Liquids Heat and Power have the highest growth rate in 2010 which matches the high porportion of coal in energy emission, in year 2015, compressed/liquified natural gas have the highest rate of growth and hydrogen have the highest rate of growth. Looking at the changes in rate of growth trhoughout the decase, we noticed that the use of energy source that is growing the most become cleaner and more efficient.
+
+
+## **(9)How do energy consumption projection trends change based on the year the report was published?**
+
+```{r,echo = FALSE}
+ConsumptionByYear_2011 = C2011 %>% 
+    filter(Source == "Total") %>% 
+    group_by(Year) %>% 
+    summarise(sumquads = sum(quads))
+    
+ConsumptionByYear2015 = C2015B %>% 
+    filter(Source == "Total") %>% 
+    group_by(Year) %>% 
+    summarise(sumquads = sum(quads))
+    
+ConsumptionByYear2020 = C2020B %>% 
+    filter(Source =="Total") %>% 
+    group_by(Year) %>% 
+    summarise(sumquads = sum(quads))
+    
+```
+
+ - In order to look at the total energy consumption, we first look at the linear relationship between the total amount energy consumption measured by quad and the year in all three data and cumpute the coefficient of them using the liner regression. Also, we like to use the coefficient for each year to predict the total energy consumption of 2030 and see whether the trend of prediction increase or decrease.
+```{r echo=FALSE}
+
+mod_2011 = (lm(ConsumptionByYear_2011$sumquads~ConsumptionByYear_2011$Year))
+
+mod_2015 = (lm(ConsumptionByYear2015$sumquads~ConsumptionByYear2015$Year))
+
+mod_2020 = (lm(ConsumptionByYear2020$sumquads~ConsumptionByYear2020$Year))
+a <- data.frame(x = 2030)
+result_2011 <- mean(predict(mod_2011,a))
+result_2015 <- mean(predict(mod_2015,a))
+result_2020 <- mean(predict(mod_2020,a))
+result_2011
+result_2015
+result_2020
+```
+ - The prediction of consumption in year 2030 using 2011 data, 2015 data, and 2020 data is 317.1068 quad, 346.4599 quad, and 344.54 quad. Thus, the prediction using linear model for 2030 energy consumption increases from 2011 to 2020 which means that the total consumption of the future might increase year after year. 
+ 
+```{r echo=FALSE}
+q82011 = ggplot(ConsumptionByYear_2011, aes(Year, sumquads))+
+    geom_point()+
+  geom_smooth(method = "lm", se=FALSE, size = 0.5) +
+  geom_abline(mapping=aes(slope=mod_2011$coefficients[2], intercept=mod_2011$coefficients[1]), color = "red", linetype="dashed") +
+    ggtitle("Total Fuel Consumtion Projections", 
+            subtitle = "Based on 2011 Data") +
+    ylab("Energy Consumption(quads)") +
+    xlab("Year")+
+    xlim(2020,2050)+
+    ylim(225,375)
+q82015 = ggplot(ConsumptionByYear2015, aes(Year, sumquads))+
+     geom_point()+
+  geom_smooth(method = "lm", se=FALSE, size = 0.5) +
+  geom_abline(mapping=aes(slope=mod_2015$coefficients[2], intercept=mod_2015$coefficients[1]), color = "red", linetype="dashed") +
+    ggtitle("Total Fuel Consumtion Projections", 
+            subtitle = "Based on 2015 Data") +
+    ylab("Energy Consumption(quads)") +
+    xlab("Year")+
+    xlim(2020,2050)+
+    ylim(225,375)
+q82020 = ggplot(ConsumptionByYear2020, aes(Year, sumquads))+
+     geom_point()+
+  geom_smooth(method = "lm", se=FALSE, size = 0.5) +
+  geom_abline(mapping=aes(slope=mod_2020$coefficients[2], intercept=mod_2020$coefficients[1]), color = "red", linetype="dashed") +
+    ggtitle("Total Fuel Consumtion Projections", 
+            subtitle = "Based on 2020 Data") +
+    ylab("Energy Consumption(quads)") +
+    xlab("Year")+
+      xlim(2020,2050)+
+    ylim(225,375)
+
+grid.arrange(q82011,q82015,q82020)
+   
+    
+    
+```
+
+
+
+## **(10) What are the projected trends for GDP, Total Energy Consumption, Emissions, and Population projected to interact over the next 10 years? Do these seem to depend upon one another?**
+  
+```{r echo=FALSE}
+
+EUS2020GDP = EnergyUseStat2020 %>% 
+  filter(Source == "Gross Domestic Product (billion 2012 dollars)") %>%  
+  pivot_wider(names_from = Source, values_from = quads) %>% 
+  rename(GDP = "Gross Domestic Product (billion 2012 dollars)") %>% select(Year,GDP)
+
+EUS2020CDE = EnergyUseStat2020 %>% 
+filter(Source == "Carbon Dioxide Emissions (million metric tons carbon dioxide)") %>%  
+pivot_wider(names_from = Source, values_from = quads) %>% 
+  rename(CO2E = "Carbon Dioxide Emissions (million metric tons carbon dioxide)") %>% 
+select(Year,CO2E)
+
+EUS2020POP = EnergyUseStat2020 %>% 
+  filter(Source == "Population (millions)") %>%  
+  pivot_wider(names_from = Source, values_from = quads) %>% 
+  rename(population = "Population (millions)") %>% 
+  select(Year,population) 
+EUS2020Energy = EnergyUseStat2020 %>% 
+  filter(Source == "Total Energy Use") %>% 
+  pivot_wider(names_from = Source, values_from = quads) %>% 
+  select(Year,`Total Energy Use`) 
+eustats = inner_join(EUS2020CDE,EUS2020Energy) %>% 
+  inner_join(EUS2020GDP) %>% 
+  inner_join(EUS2020POP) %>% 
+  filter(Year == 2020 |Year == 2021|Year == 2022|Year == 2023|Year == 2024|Year == 2025|Year == 2026|Year == 2027|Year == 2028|Year == 2029|Year == 2030)
+```
+ - After combining the data together, we plan to compare the correlation between Caarbon Dioxide emission, Gross domestic product (GDP), and population with the total energy use and see how are these variable affected by the total energy use.
+```{r echo = FALSE}
+cor_1 = as.tibble(cor(eustats$`Total Energy Use`,eustats$GDP))%>%
+  mutate(Year = "GDP")%>%
+  select(Year, value)%>%
+  rename(correlation = value)
+cor_2 = as.tibble(cor(eustats$`Total Energy Use`,eustats$CO2E))%>%
+  mutate(Year = "CO2E")%>%
+  select(Year, value)%>%
+  rename(correlation = value)
+cor_3 = as.tibble(cor(eustats$`Total Energy Use`,eustats$population))%>%
+  mutate(Year = "population")%>%
+  select(Year, value)%>%
+  rename(correlation = value)
+bind_rows(cor_1,cor_2,cor_3)
+```
+- Corrding to the pearson's correlation, both GDP and population has negative correlation which means that as total energy use increase  increases as the GDP and population decreases, and vice versa. The CO2E have a strong correlation from the energy with the total energy use increase.
+
+
+
+```{r echo=FALSE}
+
+AA = ggplot(eustats, aes(Year,GDP))+
+geom_point()+
+  geom_smooth()+
+  scale_x_discrete(breaks = c(2020,2030,2040,2050))+
+  ylab("GDP(billion 2012 dollars)")
+
+BB = ggplot(eustats, aes(Year,population))+
+geom_point()+
+  geom_smooth()+
+  scale_x_discrete(breaks = c(2020,2030,2040,2050))+
+  ylab("Population(Millions")
+CC = ggplot(eustats, aes(Year,CO2E))+
+geom_point()+
+  geom_smooth()+
+  scale_x_discrete(breaks = c(2020,2030,2040,2050))+
+  ylab("million metric tons CO2")
+DD = ggplot(eustats, aes(Year,`Total Energy Use`))+
+geom_point()+
+  geom_smooth()+
+  scale_x_discrete(breaks = c(2020,2030,2040,2050))+
+  ylab("Total Energy Consumption (Quads)")
+
+grid.arrange(AA,BB,CC,DD, nrow= 2, ncol=2)
+
+```
+
+
+
+
+### Discussion
+
