@@ -12,40 +12,40 @@ library(reshape)
 ```
 
 ```{r message = FALSE, warning = FALSE, echo = FALSE}
-C2010 <- read_csv("Data/Consumption/C2010.csv") %>%
+C2010CSV <- read_csv("Data/Consumption/C2010.csv") %>%
   mutate(originDataSet = "2010")
-C2012 <- read_csv("Data/Consumption/C2012.csv" )%>%
+C2012CSV <- read_csv("Data/Consumption/C2012.csv" )%>%
   mutate(originDataSet = "2012")
-C2013 <- read_csv("Data/Consumption/C2013.csv") %>%
+C2013CSV <- read_csv("Data/Consumption/C2013.csv") %>%
   mutate(originDataSet = "2013")
-C2014 <- read_csv("Data/Consumption/C2014.csv") %>%
+C2014CSV <- read_csv("Data/Consumption/C2014.csv") %>%
   mutate(originDataSet = "2014")
-C2015 <- read_csv("Data/Consumption/C2015.csv") %>%
+C2015CSV <- read_csv("Data/Consumption/C2015.csv") %>%
   mutate(originDataSet = "2015")
-C2016 <- read_csv("Data/Consumption/C2016.csv") %>%
+C2016CSV <- read_csv("Data/Consumption/C2016.csv") %>%
   mutate(originDataSet = "2016")
-C2017 <- read_csv("Data/Consumption/C2017.csv") %>%
+C2017CSV <- read_csv("Data/Consumption/C2017.csv") %>%
   mutate(originDataSet = "2017")
-C2018 <- read_csv("Data/Consumption/C2018.csv") %>%
+C2018CSV <- read_csv("Data/Consumption/C2018.csv") %>%
   mutate(originDataSet = "2018")
-C2019 <- read_csv("Data/Consumption/C2019.csv") %>%
+C2019CSV <- read_csv("Data/Consumption/C2019.csv") %>%
   mutate(originDataSet = "2019")
-C2020 <- read_csv("Data/Consumption/C2020.csv") %>%
+C2020CSV <- read_csv("Data/Consumption/C2020.csv") %>%
   mutate(originDataSet = "2020")
 ```
 
 ```{r echo = FALSE}
-actual_consumptions <- C2012 %>%
+actual_consumptions <- C2012CSV %>%
   select(Sector, Source, "2009", "2010", "2011") %>%
   filter(Source == "Total") %>%
   select(-Source)
 
-totalsC2010 <- C2010 %>%
+totalsC2010 <- C2010CSV %>%
   select(Sector, Source, "2008", "2009") %>%
   filter(Source == "Total") %>%
   select(-"2009", -Source)
 
-totalsC2013 <- C2013 %>%
+totalsC2013 <- C2013CSV %>%
   select(Sector, Source, "2012") %>%
   filter(Source == "Total") %>%
   select(-Source)
@@ -53,7 +53,7 @@ totalsC2013 <- C2013 %>%
 totalsC2013[4, 1] = "Transportation"
 totalsC2013[5, 1] = "Delivered Energy Consumption"
 
-totalsC2014 <- C2014 %>%
+totalsC2014 <- C2014CSV %>%
   select(Sector, Source, "2013") %>%
   filter(Source == "Total") %>%
   select(-Source)
@@ -62,7 +62,7 @@ totalsC2014[4, 1] = "Transportation"
 totalsC2014[5, 1] = "Delivered Energy Consumption"
 totalsC2014[6, 1] = "Electric Power"
 
-totalsC2015 <- C2015 %>%
+totalsC2015 <- C2015CSV %>%
   select(Sector, Source, "2014") %>%
   filter(Source == "Total") %>%
   select(-Source)
@@ -70,7 +70,7 @@ totalsC2015 <- C2015 %>%
 totalsC2015 <- totalsC2015[-c(5), ]
 totalsC2015[5, 1] = "Delivered Energy Consumption"
 
-totalsC2016 <- C2016 %>%
+totalsC2016 <- C2016CSV %>%
   select(Sector, Source, "2015") %>%
   filter(Source == "Total") %>%
   select(-Source)
@@ -79,28 +79,28 @@ totalsC2016[4, 1] = "Transportation"
 totalsC2016 <- totalsC2016[-c(5), ]
 totalsC2016[5, 1] = "Delivered Energy Consumption"
 
-totalsC2017 <- C2017 %>%
+totalsC2017 <- C2017CSV %>%
   select(Sector, Source, "2016") %>%
   filter(Source == "Total") %>%
   select(-Source)
 
 totalsC2017 <- totalsC2017[-c(5), ]
 
-totalsC2018 <- C2018 %>%
+totalsC2018 <- C2018CSV %>%
   select(Sector, Source, "2017") %>%
   filter(Source == "Total") %>%
   select(-Source)
 
 totalsC2018 <- totalsC2018[-c(5), ]
 
-totalsC2019 <- C2019 %>%
+totalsC2019 <- C2019CSV %>%
   select(Sector, Source, "2018") %>%
   filter(Source == "Total") %>%
   select(-Source)
   
 totalsC2019 <- totalsC2019[-c(5), ]
 
-totalsC2020 <- C2020 %>%
+totalsC2020 <- C2020CSV %>%
   select(Sector, Source, "2019") %>%
   filter(Source == "Total") %>%
   select(-Source)
@@ -148,69 +148,69 @@ ggplot(sector_only_consumption_data, aes(x = Year, y = Consumption, color = Sect
 In this plot, we demonstrate the changes in consumption of energy from various sectors for each year in the past from 2008 up till 2019. We see that some sectors have increased consumption relative to each years consumption levels and some have also reduced.
 
 ```{r message = FALSE, warning = FALSE, echo = FALSE}
-E2010 <- read_csv("Data/Emission/E2010.csv") %>%
+E2010CSV <- read_csv("Data/Emission/E2010.csv") %>%
   mutate(originDataSet = "2010")
 
-E2010 <- E2010[-c(3, 30, 31), ]
+E2010CSV <- E2010CSV[-c(3, 30, 31), ]
 
-E2012 <- read_csv("Data/Emission/E2012.csv")%>%
+E2012CSV <- read_csv("Data/Emission/E2012.csv")%>%
   mutate(originDataSet = "2012")
 
-E2012 <- E2012[-c(3), ]
+E2012CSV <- E2012CSV[-c(3), ]
 
-E2013 <- read_csv("Data/Emission/E2013.csv") %>%
+E2013CSV <- read_csv("Data/Emission/E2013.csv") %>%
   mutate(originDataSet = "2013")
 
-E2013 <- E2013[-c(3), ]
+E2013CSV <- E2013CSV[-c(3), ]
 
-E2014 <- read_csv("Data/Emission/E2014.csv") %>%
+E2014CSV <- read_csv("Data/Emission/E2014.csv") %>%
   mutate(originDataSet = "2014")
-E2015 <- read_csv("Data/Emission/E2015.csv") %>%
+E2015CSV <- read_csv("Data/Emission/E2015.csv") %>%
   mutate(originDataSet = "2015")
 
-E2015 <- E2015[-c(29), ]
+E2015CSV <- E2015CSV[-c(29), ]
 
-E2016 <- read_csv("Data/Emission/E2016.csv") %>%
+E2016CSV <- read_csv("Data/Emission/E2016.csv") %>%
   mutate(originDataSet = "2016")
-E2017 <- read_csv("Data/Emission/E2017.csv") %>%
+E2017CSV <- read_csv("Data/Emission/E2017.csv") %>%
   mutate(originDataSet = "2017")
-E2018 <- read_csv("Data/Emission/E2018.csv") %>%
+E2018CSV <- read_csv("Data/Emission/E2018.csv") %>%
   mutate(originDataSet = "2018")
-E2019 <- read_csv("Data/Emission/E2019.csv") %>%
+E2019CSV <- read_csv("Data/Emission/E2019.csv") %>%
   mutate(originDataSet = "2019")
-E2020 <- read_csv("Data/Emission/E2020.csv") %>%
+E2020CSV <- read_csv("Data/Emission/E2020.csv") %>%
   mutate(originDataSet = "2020")
 ```
 
 ```{r echo = FALSE}
-actual_emissions <- E2010 %>%
+actual_emissions <- E2010CSV %>%
   select(Sector, Source, "2007", "2008", "2009")
 
-actual_E2012 <- E2012 %>%
+actual_E2012 <- E2012CSV %>%
   select(Sector, "2010", "2011")
 
-actual_E2013 <- E2013 %>%
+actual_E2013 <- E2013CSV %>%
   select(Sector, "2012")
 
-actual_E2014 <- E2014 %>%
+actual_E2014 <- E2014CSV %>%
   select(Sector, "2013")
 
-actual_E2015 <- E2015 %>%
+actual_E2015 <- E2015CSV %>%
   select(Sector, "2014")
 
-actual_E2016 <- E2016 %>%
+actual_E2016 <- E2016CSV %>%
   select(Sector, "2015")
 
-actual_E2017 <- E2017 %>%
+actual_E2017 <- E2017CSV %>%
   select(Sector, "2016")
 
-actual_E2018 <- E2018 %>%
+actual_E2018 <- E2018CSV %>%
   select(Sector, "2017")
 
-actual_E2019 <- E2019 %>%
+actual_E2019 <- E2019CSV %>%
   select(Sector, "2018")
 
-actual_E2020 <- E2020 %>%
+actual_E2020 <- E2020CSV %>%
   select(Sector, "2019")
 ```
 
@@ -248,7 +248,7 @@ ggplot(tall_totals_actual_emissions, aes(x = Year, y = Emissions, color = Sector
   theme_bw()
 ```
 
-In this plot, we demonstrate the changes in emissions of energy from various sectors for each year in the past from 2007 up till 2019. We clearly notice a reduction in emissions from each sector's consumption for each subsequent years based on the regression lines.
+similarly, in this plot, we demonstrate the changes in emissions of energy from various sectors for each year in the past from 2007 up till 2019. We clearly notice a reduction in emissions from each sector's consumption for each subsequent years based on the regression lines.
 
 ```{r echo = FALSE}
 max_emission_value = max(tall_totals_actual_emissions$Emissions, na.rm = TRUE)
@@ -291,7 +291,7 @@ ggplot(combined_normalized_actual_consumption_emissions, aes(x = Year, y = Effic
   theme_bw()
 ```
 
-In this plot, we demonstrate the changes in consumption of energy as it relates to its emissions collectively described as its efficiency from various sectors for each year in the past from 2009 up till 2019. We see a negative correlation for more regression lines suggesting an improvement in efficiency. We will now conduct a hypothesis test to supplement this trend to verify its validity.
+Finally, in this plot, we demonstrate the changes in consumption of energy as it relates to its emissions collectively described as its efficiency from various sectors for each year in the past from 2009 up till 2019. We see a negative correlation for more regression lines suggesting an improvement in efficiency. We will now conduct a hypothesis test to supplement this trend to verify its validity.
 
 $H_0:$ United States shows no change in energy consumption/emissions efficiency.
 
