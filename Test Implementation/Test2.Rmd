@@ -1,0 +1,334 @@
+---
+title: "Second_Test"
+author: "Param"
+date: "12/7/2020"
+output: html_document
+---
+
+```{r include = FALSE}
+library(tidyverse)
+library(lubridate)
+library(reshape)
+```
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+C2010 <- read_csv("Data/Consumption/C2010.csv") %>%
+  mutate(originDataSet = "2010")
+C2012 <- read_csv("Data/Consumption/C2012.csv" )%>%
+  mutate(originDataSet = "2012")
+C2013 <- read_csv("Data/Consumption/C2013.csv") %>%
+  mutate(originDataSet = "2013")
+C2014 <- read_csv("Data/Consumption/C2014.csv") %>%
+  mutate(originDataSet = "2014")
+C2015 <- read_csv("Data/Consumption/C2015.csv") %>%
+  mutate(originDataSet = "2015")
+C2016 <- read_csv("Data/Consumption/C2016.csv") %>%
+  mutate(originDataSet = "2016")
+C2017 <- read_csv("Data/Consumption/C2017.csv") %>%
+  mutate(originDataSet = "2017")
+C2018 <- read_csv("Data/Consumption/C2018.csv") %>%
+  mutate(originDataSet = "2018")
+C2019 <- read_csv("Data/Consumption/C2019.csv") %>%
+  mutate(originDataSet = "2019")
+C2020 <- read_csv("Data/Consumption/C2020.csv") %>%
+  mutate(originDataSet = "2020")
+```
+
+```{r echo = FALSE}
+actual_consumptions <- C2012 %>%
+  select(Sector, Source, "2009", "2010", "2011") %>%
+  filter(Source == "Total") %>%
+  select(-Source)
+
+totalsC2010 <- C2010 %>%
+  select(Sector, Source, "2008", "2009") %>%
+  filter(Source == "Total") %>%
+  select(-"2009", -Source)
+
+totalsC2013 <- C2013 %>%
+  select(Sector, Source, "2012") %>%
+  filter(Source == "Total") %>%
+  select(-Source)
+
+totalsC2013[4, 1] = "Transportation"
+totalsC2013[5, 1] = "Delivered Energy Consumption"
+
+totalsC2014 <- C2014 %>%
+  select(Sector, Source, "2013") %>%
+  filter(Source == "Total") %>%
+  select(-Source)
+
+totalsC2014[4, 1] = "Transportation"
+totalsC2014[5, 1] = "Delivered Energy Consumption"
+totalsC2014[6, 1] = "Electric Power"
+
+totalsC2015 <- C2015 %>%
+  select(Sector, Source, "2014") %>%
+  filter(Source == "Total") %>%
+  select(-Source)
+
+totalsC2015 <- totalsC2015[-c(5), ]
+totalsC2015[5, 1] = "Delivered Energy Consumption"
+
+totalsC2016 <- C2016 %>%
+  select(Sector, Source, "2015") %>%
+  filter(Source == "Total") %>%
+  select(-Source)
+
+totalsC2016[4, 1] = "Transportation"
+totalsC2016 <- totalsC2016[-c(5), ]
+totalsC2016[5, 1] = "Delivered Energy Consumption"
+
+totalsC2017 <- C2017 %>%
+  select(Sector, Source, "2016") %>%
+  filter(Source == "Total") %>%
+  select(-Source)
+
+totalsC2017 <- totalsC2017[-c(5), ]
+
+totalsC2018 <- C2018 %>%
+  select(Sector, Source, "2017") %>%
+  filter(Source == "Total") %>%
+  select(-Source)
+
+totalsC2018 <- totalsC2018[-c(5), ]
+
+totalsC2019 <- C2019 %>%
+  select(Sector, Source, "2018") %>%
+  filter(Source == "Total") %>%
+  select(-Source)
+  
+totalsC2019 <- totalsC2019[-c(5), ]
+
+totalsC2020 <- C2020 %>%
+  select(Sector, Source, "2019") %>%
+  filter(Source == "Total") %>%
+  select(-Source)
+
+totalsC2020 <- totalsC2020[-c(5), ]
+totalsC2020[7, 1] = "Total Energy Consumption"
+```
+
+```{r include = FALSE}
+actual_consumptions <- full_join(actual_consumptions, totalsC2010, by = "Sector")
+actual_consumptions <- full_join(actual_consumptions, totalsC2013, by = "Sector")
+actual_consumptions <- full_join(actual_consumptions, totalsC2014, by = "Sector")
+actual_consumptions <- full_join(actual_consumptions, totalsC2015, by = "Sector")
+actual_consumptions <- full_join(actual_consumptions, totalsC2016, by = "Sector")
+actual_consumptions <- full_join(actual_consumptions, totalsC2017, by = "Sector")
+actual_consumptions <- full_join(actual_consumptions, totalsC2018, by = "Sector")
+actual_consumptions <- full_join(actual_consumptions, totalsC2019, by = "Sector")
+actual_consumptions <- full_join(actual_consumptions, totalsC2020, by = "Sector")
+
+actual_consumptions
+```
+
+```{r include = FALSE}
+tall_actual_consumption <- actual_consumptions %>%
+  pivot_longer(!Sector, names_to = "Year", values_to = "Consumption")
+
+tall_actual_consumption
+```
+
+```{r message = FALSE, echo = FALSE}
+sector_only_consumption_data <- tall_actual_consumption %>%
+  filter(Sector != "Total Energy Consumption",
+         Sector != "Delivered Energy Consumption")
+
+sector_only_consumption_data <- transform(sector_only_consumption_data, Year = as.numeric(Year))
+
+ggplot(sector_only_consumption_data, aes(x = Year, y = Consumption, color = Sector)) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "lm") +
+  scale_x_continuous(breaks = seq(2008, 2019, 1)) +
+  ggtitle("Energy Consumption by Sector", subtitle = "Between 2008 and 2019") +
+  theme_bw()
+```
+
+In this plot, we demonstrate the changes in consumption of energy from various sectors for each year in the past from 2008 up till 2019. We see that some sectors have increased consumption relative to each years consumption levels and some have also reduced.
+
+```{r message = FALSE, warning = FALSE, echo = FALSE}
+E2010 <- read_csv("Data/Emission/E2010.csv") %>%
+  mutate(originDataSet = "2010")
+
+E2010 <- E2010[-c(3, 30, 31), ]
+
+E2012 <- read_csv("Data/Emission/E2012.csv")%>%
+  mutate(originDataSet = "2012")
+
+E2012 <- E2012[-c(3), ]
+
+E2013 <- read_csv("Data/Emission/E2013.csv") %>%
+  mutate(originDataSet = "2013")
+
+E2013 <- E2013[-c(3), ]
+
+E2014 <- read_csv("Data/Emission/E2014.csv") %>%
+  mutate(originDataSet = "2014")
+E2015 <- read_csv("Data/Emission/E2015.csv") %>%
+  mutate(originDataSet = "2015")
+
+E2015 <- E2015[-c(29), ]
+
+E2016 <- read_csv("Data/Emission/E2016.csv") %>%
+  mutate(originDataSet = "2016")
+E2017 <- read_csv("Data/Emission/E2017.csv") %>%
+  mutate(originDataSet = "2017")
+E2018 <- read_csv("Data/Emission/E2018.csv") %>%
+  mutate(originDataSet = "2018")
+E2019 <- read_csv("Data/Emission/E2019.csv") %>%
+  mutate(originDataSet = "2019")
+E2020 <- read_csv("Data/Emission/E2020.csv") %>%
+  mutate(originDataSet = "2020")
+```
+
+```{r echo = FALSE}
+actual_emissions <- E2010 %>%
+  select(Sector, Source, "2007", "2008", "2009")
+
+actual_E2012 <- E2012 %>%
+  select(Sector, "2010", "2011")
+
+actual_E2013 <- E2013 %>%
+  select(Sector, "2012")
+
+actual_E2014 <- E2014 %>%
+  select(Sector, "2013")
+
+actual_E2015 <- E2015 %>%
+  select(Sector, "2014")
+
+actual_E2016 <- E2016 %>%
+  select(Sector, "2015")
+
+actual_E2017 <- E2017 %>%
+  select(Sector, "2016")
+
+actual_E2018 <- E2018 %>%
+  select(Sector, "2017")
+
+actual_E2019 <- E2019 %>%
+  select(Sector, "2018")
+
+actual_E2020 <- E2020 %>%
+  select(Sector, "2019")
+```
+
+```{r echo = FALSE}
+actual_emissions <- cbind(actual_emissions, "2010" = actual_E2012$"2010")
+actual_emissions <- cbind(actual_emissions, "2011" = actual_E2012$"2011")
+actual_emissions <- cbind(actual_emissions, "2012" = actual_E2013$"2012")
+actual_emissions <- cbind(actual_emissions, "2013" = actual_E2014$"2013")
+actual_emissions <- cbind(actual_emissions, "2014" = actual_E2015$"2014")
+actual_emissions <- cbind(actual_emissions, "2015" = actual_E2016$"2015")
+actual_emissions <- cbind(actual_emissions, "2016" = actual_E2017$"2016")
+actual_emissions <- cbind(actual_emissions, "2017" = actual_E2018$"2017")
+actual_emissions <- cbind(actual_emissions, "2018" = actual_E2019$"2018")
+actual_emissions <- cbind(actual_emissions, "2019" = actual_E2020$"2019")
+```
+
+```{r echo = FALSE}
+totals_actual_emissions <- actual_emissions %>%
+  filter(Source == "Total",
+         Sector != "Total by Fuel") %>%
+  select(!Source)
+
+tall_totals_actual_emissions <- totals_actual_emissions %>%
+  pivot_longer(!Sector, names_to = "Year", values_to = "Emissions")
+
+tall_totals_actual_emissions <- transform(tall_totals_actual_emissions, Year = as.numeric(Year))
+```
+
+```{r message = FALSE, echo = FALSE}
+ggplot(tall_totals_actual_emissions, aes(x = Year, y = Emissions, color = Sector)) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "lm") +
+  scale_x_continuous(breaks = seq(2007, 2019, 1)) +
+  ggtitle("Carbon-dioxide Emissions by Sector", subtitle = "Between 2007 and 2019") +
+  theme_bw()
+```
+
+In this plot, we demonstrate the changes in emissions of energy from various sectors for each year in the past from 2007 up till 2019. We clearly notice a reduction in emissions from each sector's consumption for each subsequent years based on the regression lines.
+
+```{r echo = FALSE}
+max_emission_value = max(tall_totals_actual_emissions$Emissions, na.rm = TRUE)
+max_consumption_value = max(tall_actual_consumption$Consumption, na.rm = TRUE)
+```
+
+```{r echo = FALSE}
+normalized_actual_consumption <- tall_actual_consumption
+  
+normalized_actual_consumption$Consumption <- normalized_actual_consumption$Consumption / max_consumption_value
+
+normalized_actual_emission <- tall_totals_actual_emissions
+  
+normalized_actual_emission$Emissions <- normalized_actual_emission$Emissions / max_emission_value
+
+normalized_actual_consumption <- normalized_actual_consumption %>%
+  filter(Sector != "Delivered Energy Consumption",
+         Sector != "Total Energy Consumption",
+         Year != "2008")
+
+normalized_actual_emission <- normalized_actual_emission %>%
+  filter(Year != "2007",
+         Year != "2008")
+
+combined_normalized_actual_consumption_emissions <- cbind(normalized_actual_consumption,
+                                                          Emissions = normalized_actual_emission$Emissions) %>%
+  mutate(Efficiency = Emissions/Consumption)
+
+combined_normalized_actual_consumption_emissions <- transform(combined_normalized_actual_consumption_emissions, 
+                                                              Year = as.numeric(Year))
+```
+
+```{r message = FALSE, echo = FALSE}
+ggplot(combined_normalized_actual_consumption_emissions, aes(x = Year, y = Efficiency, color = Sector)) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "lm") +
+  scale_x_continuous(breaks = seq(2009, 2019, 1)) +
+  ggtitle("Carbon Emissions and Energy Consumption Efficiency", subtitle = "Between 2009 and 2019") +
+  ylab("Efficiency (Emissions/Consumption)") +
+  theme_bw()
+```
+
+In this plot, we demonstrate the changes in consumption of energy as it relates to its emissions collectively described as its efficiency from various sectors for each year in the past from 2009 up till 2019. We see a negative correlation for more regression lines suggesting an improvement in efficiency. We will now conduct a hypothesis test to supplement this trend to verify its validity.
+
+$H_0:$ United States shows no change in energy consumption/emissions efficiency.
+
+$H_1:$ United States does show change in energy consumption/emissions efficiency.
+
+Assuming a 50% chance of being true, we attempt to determine a 5% chance of not being true and thereby state our statistical significance level to be $\alpha = 0.5$. This high statistical significance is due to the fact that the hypothesis does not necessarily require stronger evidence to reject the null hypothesis. 
+
+We use the total sector consumption and emission records from 2009 as a benchmark for verifying change for each subsequent years till 2019. There is no assumption necessary on the randomness of the sample because the data was directly derived from the energy outlook reports by the United States Energy Information Administration. However, we assume that coal does not have any impact after 2009 due to its minute decimal value and have omitted it. We also assume that there is a direct relationship between emissions and consumption for this hypothesis, but this correlation is proven later. Comparison with the benchmark will be used by a check on the parity of the sign, in that a difference that is negative in efficiency will be regarded as an improvement, so its comparison will result in TRUE, and FALSE otherwise.
+
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+efficiency_data_2009 <- combined_normalized_actual_consumption_emissions %>%
+  filter(Year == 2009)
+
+efficiency_data_all <- combined_normalized_actual_consumption_emissions %>%
+  filter(Year != 2009)
+  
+efficiency_data_all <- efficiency_data_all %>%  
+  mutate(Consumption_Comparison = case_when(Sector == "Residential" ~ ((efficiency_data_all$Consumption - efficiency_data_2009$Consumption) < 0.075),
+                                            Sector == "Commercial" ~ ((efficiency_data_all$Consumption - efficiency_data_2009$Consumption) < 0.075),
+                                            Sector == "Industrial" ~ ((efficiency_data_all$Consumption - efficiency_data_2009$Consumption) < 0.075),
+                                            Sector == "Transportation" ~ ((efficiency_data_all$Consumption - efficiency_data_2009$Consumption) < 0.075),
+                                            Sector == "Electric Power" ~ ((efficiency_data_all$Consumption - efficiency_data_2009$Consumption) < 0.075)),
+         Emissions_Comparison = case_when(Sector == "Residential" ~ ((efficiency_data_all$Emissions - efficiency_data_2009$Emissions) < 0.075),
+                                          Sector == "Commercial" ~ ((efficiency_data_all$Emissions - efficiency_data_2009$Emissions) < 0.075),
+                                          Sector == "Industrial" ~ ((efficiency_data_all$Emissions - efficiency_data_2009$Emissions) < 0.075),
+                                          Sector == "Transportation" ~ ((efficiency_data_all$Emissions - efficiency_data_2009$Emissions) < 0.075),
+                                          Sector == "Electric Power" ~ ((efficiency_data_all$Emissions - efficiency_data_2009$Emissions) < 0.075)))
+
+summary_efficiency_data_all <- efficiency_data_all %>%
+  group_by(Year) %>%
+  summarize(Consumption_Comparison_Falses = sum(Consumption_Comparison == FALSE) / 5,
+            Emission_Comparison_Falses = sum(Emissions_Comparison == FALSE) / 5)
+
+p_values <- unlist(summary_efficiency_data_all[["Consumption_Comparison_Falses"]])
+p_values <- append(p_values, unlist(summary_efficiency_data_all[["Emission_Comparison_Falses"]]))
+
+mean(p_values)
+```
+
+Seeing this, we can see the mean proportion of 0.31 is lower than our $\alpha$ value of 0.5, so we reject our null hypothesis in favor of our alternate hypothesis where consumption and efficiency has indeed dropped from the benchmarking year of 2009 and therefore does suggest a change in energy consumption/emissions efficiency.
